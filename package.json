@@ -1,0 +1,19 @@
+{
+  "name": "lwc2react",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "recast": "^0.19.0"
+  },
+  "devDependencies": {
+    "@babel/preset-env": "^7.9.6",
+    "babel-jest": "^25.5.1",
+    "jest": "^25.5.2"
+  }
+}
