@@ -13,23 +13,79 @@ function getRootComponent(ast) {
   return classDeclaration.id.name;
 }
 
+function getStyleAST(ast) {
+  return ast.program.body.find(
+    (element) =>
+      n.FunctionDeclaration.check(element) &&
+      element.params[0].name === "hostSelector"
+  );
+}
+
 function getTemplateAST(ast) {
-  return ast.program.body[0];
+  return ast.program.body.find(
+    (element) =>
+      n.FunctionDeclaration.check(element) && element.params[0].name === "$api"
+  );
 }
 
 function getClassAST(ast) {
-  return ast.program.body[4];
+  return ast.program.body.find((element) => n.ClassDeclaration.check(element));
 }
 
-function buildReactAST(name, templateAST, classAST) {
+function buildReactClassAST(name, templateAST, classAST, styleAST) {
+  const body = [
+    buildConstructor(templateAST, classAST, styleAST),
+    buildRenderMethod(templateAST, classAST, styleAST),
+    ...buildMethods(classAST),
+  ];
+
+  buildStyles(body, styleAST);
+
   return b.classDeclaration(
     b.identifier(name),
-    b.classBody([
-      buildConstructor(templateAST, classAST),
-      buildRenderMethod(templateAST, classAST),
-      ...buildMethods(classAST),
-    ]),
+    b.classBody(body.filter(Boolean)),
     b.identifier("React.Component")
+  );
+}
+
+function buildStyles(body, styleAST) {
+  if (!styleAST) return;
+
+  const didMountText = parse(`
+    const css = document.createElement('style');
+    css.type = "text/css";
+
+    css.textContent = ${styleAST.id.name}(null, "scoped"+this.___scopedSelector, null);
+    document.head.appendChild(css);
+    this.___css = css;
+  `);
+
+  const willUnmountText = parse(`
+    this.___css.parentNode.removeChild(this.___css);
+  `);
+
+  body.push(
+    b.methodDefinition(
+      "method",
+      b.identifier("componentDidMount"),
+      b.functionExpression(
+        b.identifier("componentDidMount"),
+        [],
+        b.blockStatement(didMountText.program.body)
+      )
+    )
+  );
+
+  body.push(
+    b.methodDefinition(
+      "method",
+      b.identifier("componentWillUnmount"),
+      b.functionExpression(
+        b.identifier("componentWillUnmount"),
+        [],
+        b.blockStatement(willUnmountText.program.body)
+      )
+    )
   );
 }
 
@@ -175,19 +231,19 @@ function processIfStatement(element) {
   return element;
 }
 
-function buildConstructor(templateAST, classAST) {
+function buildConstructor(templateAST, classAST, styleAST) {
   return b.methodDefinition(
     "constructor",
     b.identifier("constructor"),
     b.functionExpression(
       b.identifier("constructor"),
       [b.identifier("props")],
-      processConstructorBlock(classAST)
+      processConstructorBlock(classAST, styleAST)
     )
   );
 }
 
-function processConstructorBlock(ast) {
+function processConstructorBlock(ast, styleAST) {
   const constructorAST = ast.body.body.find(
     (prop) => prop.kind === "constructor"
   );
@@ -209,47 +265,57 @@ function processConstructorBlock(ast) {
         )
       )
     );
+    const [superCall, ...rest] = block.body;
+    block.body = [superCall, ...buildScopedSelector(styleAST), ...rest];
     return block;
   } else {
     return b.blockStatement([
       b.expressionStatement(
         b.callExpression(b.identifier("super"), [b.identifier("props")])
       ),
+      ...buildScopedSelector(styleAST),
     ]);
   }
 }
+function buildScopedSelector(styleAST) {
+  return styleAST
+    ? parse(`window.___cssUniqueCounter = window.___cssUniqueCounter || 0;
+    window.___cssUniqueCounter++;
+    this.___scopedSelector = window.___cssUniqueCounter;`).program.body
+    : [];
+}
 
-function buildRenderMethod(templateAST, classAST) {
+function buildRenderMethod(templateAST, classAST, styleAST) {
   return b.methodDefinition(
     "method",
     b.identifier("render"),
     b.functionExpression(
       b.identifier("render"),
       [],
-      buildReactCreateElements(templateAST, classAST)
+      buildReactCreateElements(templateAST, classAST, styleAST)
     )
   );
 }
 
-function buildReactCreateElements(templateAST, classAST) {
+function buildReactCreateElements(templateAST, classAST, styleAST) {
   const returnAst = templateAST.body.body[1];
 
   return b.blockStatement([
     b.returnStatement(
       returnAst
-        ? recurseElementTree(returnAst.argument.elements)
+        ? recurseElementTree(returnAst.argument.elements, styleAST)
         : b.nullLiteral()
     ),
   ]);
 }
 
-function recurseElementTree(astArray) {
+function recurseElementTree(astArray, styleAST) {
   const process = (element) => {
     if (element?.callee?.name === "api_element") {
       return b.callExpression(b.identifier("React.createElement"), [
         element.arguments[0],
-        buildProps(element, false),
-        recurseElementTree(element.arguments[2]?.elements),
+        buildProps(element, false, styleAST),
+        recurseElementTree(element.arguments[2]?.elements, styleAST),
       ]);
     } else if (element?.callee?.name === "api_text") {
       return element.arguments[0]; // return the string literal
@@ -258,11 +324,11 @@ function recurseElementTree(astArray) {
         b.thisExpression(),
         b.identifier(`state.${element.arguments[0].property.name}`)
       );
-    } else if (element?.callee?.name === 'api_custom_element') {
-      return b.callExpression(b.identifier('React.createElement'), [
+    } else if (element?.callee?.name === "api_custom_element") {
+      return b.callExpression(b.identifier("React.createElement"), [
         element.arguments[1],
-        buildProps(element, true),
-        recurseElementTree(element.arguments[3]?.elements),
+        buildProps(element, true, styleAST),
+        recurseElementTree(element.arguments[3]?.elements, styleAST),
       ]);
     } else {
       throw new Error("cannot process: " + JSON.stringify(element));
@@ -276,7 +342,7 @@ function recurseElementTree(astArray) {
   }
 }
 
-function buildProps(element, component) {
+function buildProps(element, component, styleAST) {
   const index = component ? 2 : 1;
 
   const classMap = element.arguments[index].properties.find(
@@ -291,8 +357,20 @@ function buildProps(element, component) {
   const propMap = element.arguments[index].properties.find(
     (prop) => prop.key.name === "props"
   );
+  const className = element.arguments[index].properties.find(
+    (prop) => prop.key.name === "className"
+  );
 
   const props = [];
+
+  if (styleAST) {
+    props.push(
+      b.objectProperty(
+        b.identifier('["scoped"+this.___scopedSelector]'),
+        b.stringLiteral("true")
+      )
+    );
+  }
 
   if (propMap) {
     propMap.value.properties.forEach((prop) => {
@@ -306,16 +384,27 @@ function buildProps(element, component) {
     });
   }
 
-  if (classMap)
+  if (classMap) {
     props.push(
       b.objectProperty(
         b.identifier("className"),
         b.stringLiteral(getClassNameString(classMap.value))
       )
     );
+  }
 
-  if (styleMap)
+  if (styleMap) {
     props.push(b.objectProperty(b.identifier("style"), styleMap.value));
+  }
+
+  if (className) {
+    props.push(
+      b.objectProperty(
+        b.identifier("className"),
+          b.identifier(`this.state.${className.value.property.name}`)
+      )
+    );
+  }
 
   return props.length ? b.objectExpression(props) : b.nullLiteral();
 }
@@ -328,7 +417,7 @@ export function convert(input) {
   const ast = parse(input);
 
   const name = getRootComponent(ast);
-
+  const styleAST = getStyleAST(ast);
   const templateAST = getTemplateAST(ast);
   const classAST = getClassAST(ast);
 
@@ -336,7 +425,13 @@ export function convert(input) {
     ast.program.body.shift();
   }
 
-  ast.program.body[0] = buildReactAST(name, templateAST, classAST);
+  if (styleAST) {
+    ast.program.body.push(styleAST);
+  }
+
+  ast.program.body.push(
+    buildReactClassAST(name, templateAST, classAST, styleAST)
+  );
 
   return prettyPrint(ast, { tabWidth: 4 }).code;
 }
