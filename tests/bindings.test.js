@@ -197,4 +197,64 @@ class App extends React.Component {
          `.trim()
     );
   });
+
+  it("should convert @api props", function() {
+    const code = `
+function tmpl($api, $cmp, $slotset, $ctx) {
+  const {
+    h: api_element
+  } = $api;
+  return [api_element("img", {
+    attrs: {
+      "src": $cmp.url
+    },
+    key: 0
+  }, [])];
+}
+
+var _tmpl = registerTemplate(tmpl);
+tmpl.stylesheets = [];
+tmpl.stylesheetTokens = {
+  hostAttribute: "my-app_app-host",
+  shadowAttribute: "my-app_app"
+};
+
+class App extends BaseLightningElement {
+  constructor(...args) {
+    super(...args);
+    this.url = void 0;
+  }
+
+}
+
+registerDecorators(App, {
+  publicProps: {
+    url: {
+      config: 0
+    }
+  }
+});
+
+var MyApp = registerComponent(App, {
+  tmpl: _tmpl
+});
+    `
+    expect(convert(code)).toBe(
+      `
+class App extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {};
+    }
+
+    render() {
+        return React.createElement("img", {
+            "src": this.props.url
+        }, []);
+    }
+}
+      `.trim()
+    );
+
+  })
 });

@@ -32,11 +32,17 @@ function getClassAST(ast) {
   return ast.program.body.find((element) => n.ClassDeclaration.check(element));
 }
 
-function buildReactClassAST(name, templateAST, classAST, styleAST) {
+function buildReactClassAST(
+  name,
+  templateAST,
+  classAST,
+  styleAST,
+  publicProps
+) {
   const body = [
-    buildConstructor(templateAST, classAST, styleAST),
-    buildRenderMethod(templateAST, classAST, styleAST),
-    ...buildMethods(classAST),
+    buildConstructor(templateAST, classAST, styleAST, publicProps),
+    buildRenderMethod(templateAST, classAST, styleAST, publicProps),
+    ...buildMethods(classAST, publicProps),
   ];
 
   buildStyles(body, styleAST);
@@ -89,40 +95,49 @@ function buildStyles(body, styleAST) {
   );
 }
 
-function buildMethods(classAST) {
+function buildMethods(classAST, publicProps) {
   return classAST.body.body
     .filter((property) => property?.kind === "method")
     .map((method) => {
       return b.methodDefinition(
         "method",
         b.identifier(method.key.name),
-        convertMethod(method.value, { inConstructor: false })
+        convertMethod(method.value, { inConstructor: false, publicProps })
       );
     });
 }
 
 function convertMethod(method, options) {
-  method.body.body = method.body.body.map((element) =>
-    processElement(element, options)
-  );
+  method.body.body = method.body.body
+    .map((element) => processElement(element, options))
+    .filter(Boolean);
 
   return method;
 }
 
-function processBlock(block, options = { inConstructor: false }) {
-  block.body = block.body.map((element) => processElement(element, options));
+function processBlock(
+  block,
+  options = { inConstructor: false, publicProps: [] }
+) {
+  block.body = block.body
+    .map((element) => processElement(element, options))
+    .filter(Boolean);
   return block;
 }
 
 function processAssignmentExpression(assignment, options) {
   const expression = assignment.expression;
-  const { inConstructor } = options;
+  const { inConstructor, publicProps } = options;
 
   if (
     n.MemberExpression.check(expression.left) &&
     n.ThisExpression.check(expression.left.object)
   ) {
     if (inConstructor) {
+      if (publicProps.includes(expression.left.property.name)) {
+        return null;
+      }
+
       return b.expressionStatement(
         b.assignmentExpression(
           "=",
@@ -141,7 +156,7 @@ function processAssignmentExpression(assignment, options) {
             b.objectExpression([
               b.objectProperty(
                 expression.left.property,
-                processExpression(expression.right)
+                processExpression(expression.right, options)
               ),
             ]),
           ])
@@ -171,9 +186,11 @@ function processElement(element, options) {
   return element;
 }
 
-function processCallExpression(callExpression) {
+function processCallExpression(callExpression, { publicProps }) {
   if (callExpression?.expression?.callee?.type === "Super") {
     callExpression.expression.arguments = [b.identifier("props")];
+  } else if (publicProps && publicProps.length) {
+    // @todo make sure to call prop methods
   }
 
   return callExpression;
@@ -183,67 +200,69 @@ function processVariableDeclaration(element, options) {
   for (let i = 0; i < element.declarations.length; i++) {
     const declaration = element.declarations[i];
 
-    element.declarations[i] = processExpression(element.declarations[i]);
+    element.declarations[i] = processExpression(
+      element.declarations[i],
+      options
+    );
 
     if (n.VariableDeclarator.check(declaration)) {
       element.declarations[i] = b.variableDeclarator(
         declaration.id,
-        processExpression(declaration.init)
+        processExpression(declaration.init, options)
       );
     }
   }
   return element;
 }
 
-function processExpression(expression) {
+function processExpression(expression, options) {
+  const { publicProps } = options;
+
   if (
     n.MemberExpression.check(expression) &&
     n.ThisExpression.check(expression.object)
   ) {
-    return b.memberExpression(
-      b.thisExpression(),
-      b.identifier(`state.${expression.property.name}`)
-    );
+    return b.identifier(getRefString(expression.property.name, publicProps));
   }
 
   if (n.BinaryExpression.check(expression)) {
-    expression.left = processExpression(expression.left);
-    expression.right = processExpression(expression.right);
+    expression.left = processExpression(expression.left, options);
+    expression.right = processExpression(expression.right, options);
     return expression;
   }
 
   return expression;
 }
 
-function processIfStatement(element) {
-  element.test = processExpression(element.test);
+function processIfStatement(element, options) {
+  element.test = processExpression(element.test, options);
 
   element.consequent = n.BlockStatement.check(element.consequent)
-    ? processBlock(element.consequent)
-    : processExpression(element.consequent);
+    ? processBlock(element.consequent, options)
+    : processExpression(element.consequent, options);
 
   if (element.alternate) {
     element.alternate = n.BlockStatement.check(element.alternate)
-      ? processBlock(element.alternate)
-      : processExpression(element.alternate);
+      ? processBlock(element.alternate, options)
+      : processExpression(element.alternate, options);
   }
 
   return element;
 }
 
-function buildConstructor(templateAST, classAST, styleAST) {
+function buildConstructor(templateAST, classAST, styleAST, publicProps) {
   return b.methodDefinition(
     "constructor",
     b.identifier("constructor"),
     b.functionExpression(
       b.identifier("constructor"),
       [b.identifier("props")],
-      processConstructorBlock(classAST, styleAST)
+      processConstructorBlock(classAST, styleAST, publicProps)
     )
   );
 }
 
-function processConstructorBlock(ast, styleAST) {
+function processConstructorBlock(ast, styleAST, publicProps) {
   const constructorAST = ast.body.body.find(
     (prop) => prop.kind === "constructor"
   );
@@ -251,6 +270,7 @@ function processConstructorBlock(ast, styleAST) {
   if (constructorAST) {
     const block = processBlock(constructorAST.value.body, {
       inConstructor: true,
+      publicProps,
     });
 
     // initialize empty state
@@ -285,50 +305,62 @@ function buildScopedSelector(styleAST) {
     : [];
 }
 
-function buildRenderMethod(templateAST, classAST, styleAST) {
+function buildRenderMethod(templateAST, classAST, styleAST, publicProps) {
   return b.methodDefinition(
     "method",
     b.identifier("render"),
     b.functionExpression(
       b.identifier("render"),
       [],
-      buildReactCreateElements(templateAST, classAST, styleAST)
+      buildReactCreateElements(templateAST, classAST, styleAST, publicProps)
     )
   );
 }
 
-function buildReactCreateElements(templateAST, classAST, styleAST) {
+function buildReactCreateElements(
+  templateAST,
+  classAST,
+  styleAST,
+  publicProps
+) {
   const returnAst = templateAST.body.body[1];
 
   return b.blockStatement([
     b.returnStatement(
       returnAst
-        ? recurseElementTree(returnAst.argument.elements, styleAST)
+        ? recurseElementTree(returnAst.argument.elements, styleAST, publicProps)
         : b.nullLiteral()
     ),
   ]);
 }
 
-function recurseElementTree(astArray, styleAST) {
+function recurseElementTree(astArray, styleAST, publicProps) {
   const process = (element) => {
     if (element?.callee?.name === "api_element") {
       return b.callExpression(b.identifier("React.createElement"), [
         element.arguments[0],
-        buildProps(element, false, styleAST),
-        recurseElementTree(element.arguments[2]?.elements, styleAST),
+        buildProps(element, false, styleAST, publicProps),
+        recurseElementTree(
+          element.arguments[2]?.elements,
+          styleAST,
+          publicProps
+        ),
       ]);
     } else if (element?.callee?.name === "api_text") {
       return element.arguments[0]; // return the string literal
     } else if (element?.callee?.name === "api_dynamic") {
-      return b.memberExpression(
-        b.thisExpression(),
-        b.identifier(`state.${element.arguments[0].property.name}`)
+      return b.identifier(
+        getRefString(element.arguments[0].property.name, publicProps)
       );
     } else if (element?.callee?.name === "api_custom_element") {
       return b.callExpression(b.identifier("React.createElement"), [
         element.arguments[1],
-        buildProps(element, true, styleAST),
-        recurseElementTree(element.arguments[3]?.elements, styleAST),
+        buildProps(element, true, styleAST, publicProps),
+        recurseElementTree(
+          element.arguments[3]?.elements,
+          styleAST,
+          publicProps
+        ),
       ]);
     } else {
       throw new Error("cannot process: " + JSON.stringify(element));
@@ -342,7 +374,7 @@ function recurseElementTree(astArray, styleAST) {
   }
 }
 
-function buildProps(element, component, styleAST) {
+function buildProps(element, component, styleAST, publicProps) {
   const index = component ? 2 : 1;
 
   const classMap = element.arguments[index].properties.find(
@@ -374,13 +406,13 @@ function buildProps(element, component, styleAST) {
 
   if (propMap) {
     propMap.value.properties.forEach((prop) => {
-      props.push(prop);
+      props.push(processProp(prop, publicProps));
     });
   }
 
   if (attrMap) {
     attrMap.value.properties.forEach((prop) => {
-      props.push(prop);
+      props.push(processProp(prop, publicProps));
     });
   }
 
@@ -401,7 +433,7 @@ function buildProps(element, component, styleAST) {
     props.push(
       b.objectProperty(
         b.identifier("className"),
-          b.identifier(`this.state.${className.value.property.name}`)
+        b.identifier(getRefString(className.value.property.name, publicProps))
       )
     );
   }
@@ -409,13 +441,47 @@ function buildProps(element, component, styleAST) {
   return props.length ? b.objectExpression(props) : b.nullLiteral();
 }
 
+function getRefString(ref, publicProps) {
+  return publicProps.includes(ref) ? `this.props.${ref}` : `this.state.${ref}`;
+}
+
+function processProp(prop, publicProps) {
+  if (
+    n.MemberExpression.check(prop.value) &&
+    prop.value.object.name === "$cmp"
+  ) {
+    prop.value.object = b.identifier("this.props");
+  }
+
+  return prop;
+}
+
 function getClassNameString(objectExpression) {
   return objectExpression.properties.map((prop) => prop.key.value).join(" ");
+}
+
+function getPublicProps(ast) {
+  const registerDecorators = ast.program.body.find(
+    (element) =>
+      n.ExpressionStatement.check(element) &&
+      element?.expression?.callee?.name === "registerDecorators"
+  );
+
+  if (registerDecorators) {
+    return (
+      registerDecorators.expression?.arguments[1]?.properties
+        .find((prop) => prop.key.name === "publicProps")
+        ?.value?.properties.map((prop) => prop.key.name) || []
+    );
+  }
+
+  return [];
 }
 
 export function convert(input) {
   const ast = parse(input);
 
+  const publicProps = getPublicProps(ast);
   const name = getRootComponent(ast);
   const styleAST = getStyleAST(ast);
   const templateAST = getTemplateAST(ast);
@@ -430,7 +496,7 @@ export function convert(input) {
   }
 
   ast.program.body.push(
-    buildReactClassAST(name, templateAST, classAST, styleAST)
+    buildReactClassAST(name, templateAST, classAST, styleAST, publicProps)
   );
 
   return prettyPrint(ast, { tabWidth: 4 }).code;
