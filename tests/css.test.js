@@ -69,7 +69,7 @@ class App extends React.Component {
     componentDidMount() {
         const css = document.createElement("style");
         css.type = "text/css";
-        css.textContent = stylesheet(null, "scoped" + this.___scopedSelector, null);
+        css.textContent = stylesheet(null, "[scoped" + this.___scopedSelector + "]", null);
         document.head.appendChild(css);
         this.___css = css;
     }
@@ -162,7 +162,7 @@ class App extends React.Component {
     componentDidMount() {
         const css = document.createElement("style");
         css.type = "text/css";
-        css.textContent = stylesheetABC(null, "scoped" + this.___scopedSelector, null);
+        css.textContent = stylesheetABC(null, "[scoped" + this.___scopedSelector + "]", null);
         document.head.appendChild(css);
         this.___css = css;
     }

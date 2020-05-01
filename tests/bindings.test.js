@@ -257,4 +257,124 @@ class App extends React.Component {
     );
 
   })
+
+  it("should convert @api with a getter and styles", function() {
+    const code = `
+function stylesheet(hostSelector, shadowSelector, nativeShadow) {
+  return [".product-image", shadowSelector, " {max-height: 6.5rem;}"].join('');
+}
+var _implicitStylesheets = [stylesheet];
+
+function tmpl($api, $cmp, $slotset, $ctx) {
+  const {
+    h: api_element
+  } = $api;
+  return [api_element("div", {
+    classMap: {
+      "item-image": true
+    },
+    key: 1
+  }, [api_element("img", {
+    classMap: {
+      "product-image": true
+    },
+    attrs: {
+      "src": $cmp.imageURL,
+      "alt": $cmp.productName,
+      "title": $cmp.productName
+    },
+    key: 0
+  }, [])])];
+}
+
+var _tmpl = registerTemplate(tmpl);
+tmpl.stylesheets = [];
+
+if (_implicitStylesheets) {
+  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets);
+}
+tmpl.stylesheetTokens = {
+  hostAttribute: "my-app_app-host",
+  shadowAttribute: "my-app_app"
+};
+
+class ProductImage extends BaseLightningElement {
+  constructor(...args) {
+    super(...args);
+    this.imageUrl = void 0;
+    this.productName = void 0;
+  }
+
+  /**
+   * Gets the product image
+   */
+  get imageURL() {
+    if (this.imageUrl) {
+      return this.imageUrl;
+    }
+
+    return '/assets/images/noimagesmall.png';
+  }
+
+}
+
+registerDecorators(ProductImage, {
+  publicProps: {
+    imageUrl: {
+      config: 0
+    },
+    productName: {
+      config: 0
+    }
+  }
+});
+
+var MyApp = registerComponent(ProductImage, {
+  tmpl: _tmpl
+});
+    `
+    expect(convert(code)).toBe(
+      `
+function stylesheet(hostSelector, shadowSelector, nativeShadow) {
+    return [".product-image", shadowSelector, " {max-height: 6.5rem;}"].join("");
+}
+
+class ProductImage extends React.Component {
+    constructor(props) {
+        super(props);
+        window.___cssUniqueCounter = window.___cssUniqueCounter || 0;
+        window.___cssUniqueCounter++;
+        this.___scopedSelector = window.___cssUniqueCounter;
+        this.state = {};
+    }
+
+    render() {
+        return React.createElement("div", {
+            ["scoped"+this.___scopedSelector]: "true",
+            className: "item-image"
+        }, React.createElement("img", {
+            ["scoped"+this.___scopedSelector]: "true",
+            "src": this.props.imageURL,
+            "alt": this.props.productName,
+            "title": this.props.productName,
+            className: "product-image"
+        }, []));
+    }
+
+    componentDidMount() {
+        const css = document.createElement("style");
+        css.type = "text/css";
+        css.textContent = stylesheet(null, "[scoped" + this.___scopedSelector + "]", null);
+        document.head.appendChild(css);
+        this.___css = css;
+    }
+
+    componentWillUnmount() {
+        this.___css.parentNode.removeChild(this.___css);
+    }
+}
+      `.trim()
+    );
+
+  })
 });
