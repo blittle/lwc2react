@@ -27,7 +27,7 @@ tmpl.stylesheetTokens = {
     expect(convert('something.html', source)).toBe(
       `
 import _implicitStylesheets from "./test.css";
-import * as React from "react";
+import React from "react";
 
 function tmpl($cmp) {
   return null;
@@ -79,7 +79,7 @@ tmpl.stylesheetTokens = {
     expect(convert('something.html', source)).toBe(
       `
 import _implicitStylesheets from "./test.css";
-import * as React from "react";
+import React from "react";
 
 function tmpl($cmp) {
   return React.createElement("div", {
@@ -137,7 +137,7 @@ tmpl.stylesheetTokens = {
     expect(convert('something.html', source)).toBe(
       `
 import _implicitStylesheets from "./test.css";
-import * as React from "react";
+import React from "react";
 
 function tmpl($cmp) {
   return React.createElement("div", {
@@ -198,7 +198,7 @@ tmpl.stylesheetTokens = {
     expect(convert('something.html', source)).toBe(
       `
 import _implicitStylesheets from "./test.css";
-import * as React from "react";
+import React from "react";
 
 function tmpl($cmp) {
   return React.createElement("div", {
@@ -255,7 +255,7 @@ tmpl.stylesheetTokens = {
     expect(convert("something.html", source)).toBe(
       `
 import _implicitStylesheets from "./test.css";
-import * as React from "react";
+import React from "react";
 
 function tmpl($cmp) {
   return React.createElement("div", {
@@ -316,7 +316,7 @@ tmpl.stylesheetTokens = {
     expect(convert('something.html', source)).toBe(
       `
 import _implicitStylesheets from "./test.css";
-import * as React from "react";
+import React from "react";
 
 function tmpl($cmp) {
   return React.createElement("div", {
@@ -392,7 +392,7 @@ tmpl.stylesheetTokens = {
 
         expect(convert('something.html', code)).toBe(`
 import _implicitStylesheets from "./test.css";
-import * as React from "react";
+import React from "react";
 
 function tmpl($cmp) {
   return React.createElement("figure", {
@@ -443,12 +443,13 @@ export default _registerComponent(Test, {
     `
 
     expect(convert('something.js', source)).toBe(`
+import ObservableMembrane from "observable-membrane";
 import _tmpl from "./test.html";
-import * as React from "react";
+import React from "react";
 
 class Test extends React.Component {
   render() {
-    return _tmpl(this);
+    return _tmpl(Object.assign(this, this.__s, this.props));
   }
 
   componentDidMount() {
@@ -460,8 +461,8 @@ class Test extends React.Component {
       sheet.type = "text/css";
 
       sheet.textContent = stylesheet(
-        "[scoped" + _tmpl.stylesheetTokens.hostAttribute + "]",
-        "[scoped" + _tmpl.stylesheetTokens.shadowAttribute + "]",
+        "[" + _tmpl.stylesheetTokens.hostAttribute + "]",
+        "[" + _tmpl.stylesheetTokens.shadowAttribute + "]",
         null
       );
 
@@ -514,7 +515,7 @@ tmpl.stylesheetTokens = {
 `
 expect(convert('something.html', source)).toBe(`
 import _implicitStylesheets from "./product.css";
-import * as React from "react";
+import React from "react";
 
 function tmpl($cmp) {
   return React.createElement("h1", {
@@ -534,6 +535,300 @@ tmpl.stylesheetTokens = {
   shadowAttribute: "my-product_product"
 };
 `.trim())
+
+  })
+
+  it('should convert conditional blocks and expressions', function() {
+    const source = `
+import { registerDecorators as _registerDecorators } from "lwc";
+import _tmpl from "./app.html";
+import { registerComponent as _registerComponent } from "lwc";
+import { LightningElement } from 'lwc';
+
+class ProductImage extends LightningElement {
+  constructor(...args) {
+    super(...args);
+    this.someValue = 1;
+  }
+
+  change() {
+    const someValue = this.someValue;
+
+    if (this.someValue) {
+      this.someValue = this.someValue + 1;
+    } else {
+      this.someValue = someValue + 1;
+    }
+
+    this.someValue = this.someValue ? this.someValue + 1 : someValue + 1;
+  }
+
+}
+
+_registerDecorators(ProductImage, {
+  fields: ["someValue"]
+})
+
+export default _registerComponent(ProductImage, {
+  tmpl: _tmpl
+});
+    `;
+
+    expect(convert('some.js', source)).toBe(`
+import ObservableMembrane from "observable-membrane";
+import React from "react";
+import _tmpl from "./app.html";
+
+class ProductImage extends React.Component {
+  constructor(...args) {
+    super(...args);
+
+    const membrane = new ObservableMembrane({
+      valueMutated: () => {
+        if (this.mounted)
+          this.forceUpdate();
+      }
+    });
+
+    this.__s = membrane.getProxy({});
+    this.__s.someValue = 1;
+  }
+
+  change() {
+    const someValue = this.__s.someValue;
+
+    if (this.__s.someValue) {
+      this.__s.someValue = this.__s.someValue + 1;
+    } else {
+      this.__s.someValue = someValue + 1;
+    }
+
+    this.__s.someValue = this.__s.someValue ? this.__s.someValue + 1 : someValue + 1;
+  }
+
+  render() {
+    return _tmpl(Object.assign(this, this.__s, this.props));
+  }
+
+  componentDidMount() {
+    this.mounted = true;
+    this.stylesheets = [];
+
+    _tmpl.stylesheets.forEach(stylesheet => {
+      const sheet = document.createElement("style");
+      sheet.type = "text/css";
+
+      sheet.textContent = stylesheet(
+        "[" + _tmpl.stylesheetTokens.hostAttribute + "]",
+        "[" + _tmpl.stylesheetTokens.shadowAttribute + "]",
+        null
+      );
+
+      document.head.appendChild(sheet);
+      this.stylesheets.push(sheet);
+    });
+  }
+
+  componentWillUnmount() {
+    this.mounted = false;
+
+    this.stylesheets.forEach(sheet => {
+      if (sheet.parentNode)
+        sheet.parentNode.removeChild(sheet);
+    });
+  }
+}
+
+export default ProductImage;
+    `.trim());
+
+  })
+
+  it('should convert for loops', function() {
+    const source = `
+import { registerDecorators as _registerDecorators } from "lwc";
+import _tmpl from "./app.html";
+import { registerComponent as _registerComponent } from "lwc";
+import { LightningElement } from 'lwc';
+
+class ProductImage extends LightningElement {
+  constructor(...args) {
+    super(...args);
+    this.someValue = 1;
+  }
+
+  change() {
+    for (let i = this.someValue; i < this.someValue + 1; this.someValue++) {
+      this.someValue = this.someValue + 1;
+    }
+  }
+
+}
+
+_registerDecorators(ProductImage, {
+  fields: ["someValue"]
+})
+
+export default _registerComponent(ProductImage, {
+  tmpl: _tmpl
+});
+    `;
+
+    expect(convert('some.js', source)).toBe(`
+import ObservableMembrane from "observable-membrane";
+import React from "react";
+import _tmpl from "./app.html";
+
+class ProductImage extends React.Component {
+  constructor(...args) {
+    super(...args);
+
+    const membrane = new ObservableMembrane({
+      valueMutated: () => {
+        if (this.mounted)
+          this.forceUpdate();
+      }
+    });
+
+    this.__s = membrane.getProxy({});
+    this.__s.someValue = 1;
+  }
+
+  change() {
+    for (let i = this.__s.someValue; i < this.__s.someValue + 1; this.__s.someValue++) {
+      this.__s.someValue = this.__s.someValue + 1;
+    }
+  }
+
+  render() {
+    return _tmpl(Object.assign(this, this.__s, this.props));
+  }
+
+  componentDidMount() {
+    this.mounted = true;
+    this.stylesheets = [];
+
+    _tmpl.stylesheets.forEach(stylesheet => {
+      const sheet = document.createElement("style");
+      sheet.type = "text/css";
+
+      sheet.textContent = stylesheet(
+        "[" + _tmpl.stylesheetTokens.hostAttribute + "]",
+        "[" + _tmpl.stylesheetTokens.shadowAttribute + "]",
+        null
+      );
+
+      document.head.appendChild(sheet);
+      this.stylesheets.push(sheet);
+    });
+  }
+
+  componentWillUnmount() {
+    this.mounted = false;
+
+    this.stylesheets.forEach(sheet => {
+      if (sheet.parentNode)
+        sheet.parentNode.removeChild(sheet);
+    });
+  }
+}
+
+export default ProductImage;
+    `.trim());
+
+  })
+
+  it('should convert forof loops', function() {
+    const source = `
+import { registerDecorators as _registerDecorators } from "lwc";
+import _tmpl from "./app.html";
+import { registerComponent as _registerComponent } from "lwc";
+import { LightningElement } from 'lwc';
+
+class ProductImage extends LightningElement {
+  constructor(...args) {
+    super(...args);
+    this.arr = [1, 2];
+  }
+
+  change() {
+    for (let el of this.arr) {
+      this.arr.push(this.something);
+    }
+  }
+
+}
+
+_registerDecorators(ProductImage, {
+  fields: ["someValue"]
+})
+
+export default _registerComponent(ProductImage, {
+  tmpl: _tmpl
+});
+    `;
+
+    expect(convert('some.js', source)).toBe(`
+import ObservableMembrane from "observable-membrane";
+import React from "react";
+import _tmpl from "./app.html";
+
+class ProductImage extends React.Component {
+  constructor(...args) {
+    super(...args);
+
+    const membrane = new ObservableMembrane({
+      valueMutated: () => {
+        if (this.mounted)
+          this.forceUpdate();
+      }
+    });
+
+    this.__s = membrane.getProxy({});
+    this.__s.arr = [1, 2];
+  }
+
+  change() {
+    for (let el of this.__s.arr) {
+      this.__s.arr.push(this.__s.something);
+    }
+  }
+
+  render() {
+    return _tmpl(Object.assign(this, this.__s, this.props));
+  }
+
+  componentDidMount() {
+    this.mounted = true;
+    this.stylesheets = [];
+
+    _tmpl.stylesheets.forEach(stylesheet => {
+      const sheet = document.createElement("style");
+      sheet.type = "text/css";
+
+      sheet.textContent = stylesheet(
+        "[" + _tmpl.stylesheetTokens.hostAttribute + "]",
+        "[" + _tmpl.stylesheetTokens.shadowAttribute + "]",
+        null
+      );
+
+      document.head.appendChild(sheet);
+      this.stylesheets.push(sheet);
+    });
+  }
+
+  componentWillUnmount() {
+    this.mounted = false;
+
+    this.stylesheets.forEach(sheet => {
+      if (sheet.parentNode)
+        sheet.parentNode.removeChild(sheet);
+    });
+  }
+}
+
+export default ProductImage;
+    `.trim());
 
   })
 });

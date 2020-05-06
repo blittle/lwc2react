@@ -1,9 +1,14 @@
 import { convert } from "../src/index";
 
-xdescribe("Component composition", function () {
+describe("Component composition", function () {
   it("should render nested component", function () {
     const code = `
-function tmpl$1($api, $cmp, $slotset, $ctx) {
+import _implicitStylesheets from "./app.css";
+
+import _myComp from "my/comp";
+import { registerTemplate } from "lwc";
+
+function tmpl($api, $cmp, $slotset, $ctx) {
   const {
     c: api_custom_element
   } = $api;
@@ -12,38 +17,53 @@ function tmpl$1($api, $cmp, $slotset, $ctx) {
   }, [])];
 }
 
-var _tmpl$1 = registerTemplate(tmpl$1);
-tmpl$1.stylesheets = [];
-tmpl$1.stylesheetTokens = {
+export default registerTemplate(tmpl);
+tmpl.stylesheets = [];
+
+if (_implicitStylesheets) {
+  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets)
+}
+tmpl.stylesheetTokens = {
   hostAttribute: "my-app_app-host",
   shadowAttribute: "my-app_app"
 };
-
-class App extends BaseLightningElement {}
-
-var MyApp = registerComponent(App, {
-  tmpl: _tmpl$1
-});
         `.trim();
 
-    expect(convert(code)).toBe(
+    expect(convert('something.html', code)).toBe(
       `
-class App extends React.Component {
-    constructor(props) {
-        super(props);
-    }
+import _implicitStylesheets from "./app.css";
+import _myComp from "my/comp";
+import React from "react";
 
-    render() {
-        return React.createElement(_myComp, null, null);
-    }
+function tmpl($cmp) {
+  return React.createElement(_myComp, {
+    [tmpl.stylesheetTokens.shadowAttribute]: "true"
+  }, null);
 }
+
+export default tmpl;
+tmpl.stylesheets = [];
+
+if (_implicitStylesheets) {
+  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets);
+}
+
+tmpl.stylesheetTokens = {
+  hostAttribute: "my-app_app-host",
+  shadowAttribute: "my-app_app"
+};
         `.trim()
     );
   });
 
   it("should render nested components with slots and properties", function () {
     const code = `
-function tmpl$1($api, $cmp, $slotset, $ctx) {
+import _implicitStylesheets from "./app.css";
+
+import _myComp from "my/comp";
+import { registerTemplate } from "lwc";
+
+function tmpl($api, $cmp, $slotset, $ctx) {
   const {
     t: api_text,
     h: api_element,
@@ -51,42 +71,201 @@ function tmpl$1($api, $cmp, $slotset, $ctx) {
   } = $api;
   return [api_custom_element("my-comp", _myComp, {
     props: {
-      "wow": "there"
+      "wow": $cmp.wow
+    },
+    key: 2
+  }, [api_element("h1", {
+    key: 0
+  }, [api_text("a content")]), api_element("h2", {
+    attrs: {
+      "slot": "b"
     },
     key: 1
-  }, [api_element("div", {
-    key: 0
-  }, [api_text("hi")])])];
+  }, [api_text("b content")])])];
 }
 
-var _tmpl$1 = registerTemplate(tmpl$1);
-tmpl$1.stylesheets = [];
-tmpl$1.stylesheetTokens = {
+export default registerTemplate(tmpl);
+tmpl.stylesheets = [];
+
+if (_implicitStylesheets) {
+  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets)
+}
+tmpl.stylesheetTokens = {
   hostAttribute: "my-app_app-host",
   shadowAttribute: "my-app_app"
 };
-
-class App extends BaseLightningElement {}
-
-var MyApp = registerComponent(App, {
-  tmpl: _tmpl$1
-});
         `.trim();
 
-    expect(convert(code)).toBe(
+    expect(convert("temp.html", code)).toBe(
       `
-class App extends React.Component {
-    constructor(props) {
-        super(props);
-    }
+import _implicitStylesheets from "./app.css";
+import _myComp from "my/comp";
+import React from "react";
 
-    render() {
-        return React.createElement(_myComp, {
-            "wow": "there"
-        }, React.createElement("div", null, "hi"));
-    }
+function tmpl($cmp) {
+  return React.createElement(_myComp, {
+    [tmpl.stylesheetTokens.shadowAttribute]: "true",
+    "wow": $cmp.wow
+  }, {
+    "": React.createElement("h1", {
+      [tmpl.stylesheetTokens.shadowAttribute]: "true"
+    }, "a content"),
+
+    "b": React.createElement("h2", {
+      [tmpl.stylesheetTokens.shadowAttribute]: "true",
+      "slot": "b"
+    }, "b content")
+  });
 }
+
+export default tmpl;
+tmpl.stylesheets = [];
+
+if (_implicitStylesheets) {
+  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets);
+}
+
+tmpl.stylesheetTokens = {
+  hostAttribute: "my-app_app-host",
+  shadowAttribute: "my-app_app"
+};
         `.trim()
+    );
+  });
+
+  it("should render slots as children", function () {
+    const code = `
+import _implicitStylesheets from "./comp.css";
+
+import { registerTemplate } from "lwc";
+
+function tmpl($api, $cmp, $slotset, $ctx) {
+  const {
+    s: api_slot
+  } = $api;
+  return [api_slot("", {
+    key: 0
+  }, [], $slotset), api_slot("b", {
+    attrs: {
+      "name": "b"
+    },
+    key: 1
+  }, [], $slotset)];
+}
+
+export default registerTemplate(tmpl);
+tmpl.slots = ["", "b"];
+tmpl.stylesheets = [];
+
+if (_implicitStylesheets) {
+  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets)
+}
+tmpl.stylesheetTokens = {
+  hostAttribute: "my-comp_comp-host",
+  shadowAttribute: "my-comp_comp"
+};
+        `.trim();
+
+    expect(convert('temp.html', code)).toBe(
+      `
+import _implicitStylesheets from "./comp.css";
+import React from "react";
+
+function tmpl($cmp) {
+  return [
+    $cmp.props.children && $cmp.props.children[""] ? $cmp.props.children[""] : null,
+    $cmp.props.children && $cmp.props.children["b"] ? $cmp.props.children["b"] : null
+  ];
+}
+
+export default tmpl;
+tmpl.slots = ["", "b"];
+tmpl.stylesheets = [];
+
+if (_implicitStylesheets) {
+  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets);
+}
+
+tmpl.stylesheetTokens = {
+  hostAttribute: "my-comp_comp-host",
+  shadowAttribute: "my-comp_comp"
+};
+      `.trim()
+    );
+  });
+
+  it("should render slots as children with default markup", function () {
+    const code = `
+import _implicitStylesheets from "./comp.css";
+
+import { registerTemplate } from "lwc";
+
+function tmpl($api, $cmp, $slotset, $ctx) {
+  const {
+    t: api_text,
+    h: api_element,
+    s: api_slot
+  } = $api;
+  return [api_slot("", {
+    key: 1
+  }, [api_element("span", {
+    key: 0
+  }, [api_text("default a")])], $slotset), api_slot("b", {
+    attrs: {
+      "name": "b"
+    },
+    key: 4
+  }, [api_element("div", {
+    key: 3
+  }, [api_element("span", {
+    key: 2
+  }, [api_text("default b")])])], $slotset)];
+}
+
+export default registerTemplate(tmpl);
+tmpl.slots = ["", "b"];
+tmpl.stylesheets = [];
+
+if (_implicitStylesheets) {
+  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets)
+}
+tmpl.stylesheetTokens = {
+  hostAttribute: "my-comp_comp-host",
+  shadowAttribute: "my-comp_comp"
+};
+        `.trim();
+
+    expect(convert('temp.html', code)).toBe(
+      `
+import _implicitStylesheets from "./comp.css";
+import React from "react";
+
+function tmpl($cmp) {
+  return [
+    $cmp.props.children && $cmp.props.children[""] ? $cmp.props.children[""] : React.createElement("span", {
+      [tmpl.stylesheetTokens.shadowAttribute]: "true"
+    }, "default a"),
+    $cmp.props.children && $cmp.props.children["b"] ? $cmp.props.children["b"] : React.createElement("div", {
+      [tmpl.stylesheetTokens.shadowAttribute]: "true"
+    }, React.createElement("span", {
+      [tmpl.stylesheetTokens.shadowAttribute]: "true"
+    }, "default b"))
+  ];
+}
+
+export default tmpl;
+tmpl.slots = ["", "b"];
+tmpl.stylesheets = [];
+
+if (_implicitStylesheets) {
+  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets);
+}
+
+tmpl.stylesheetTokens = {
+  hostAttribute: "my-comp_comp-host",
+  shadowAttribute: "my-comp_comp"
+};
+      `.trim()
     );
   });
 });
