@@ -2,9 +2,10 @@
   "name": "lwc2react",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "lib/index.js",
   "scripts": {
-    "test": "jest --verbose --coverage"
+    "test": "jest --verbose --coverage",
+    "build": "babel src -d lib"
   },
   "author": "",
   "license": "ISC",
@@ -12,8 +13,12 @@
     "recast": "^0.19.0"
   },
   "devDependencies": {
+    "@babel/cli": "^7.8.4",
+    "@babel/core": "^7.9.6",
     "@babel/preset-env": "^7.9.6",
     "babel-jest": "^25.5.1",
+    "cd": "^0.3.3",
     "jest": "^25.5.2"
-  }
+  },
+  "files": ["lib"]
 }

@@ -1,83 +1,112 @@
 import { convert } from "../src/index";
 
-describe("Template conversion", function () {
+describe("templates", function() {
   it("should convert an empty component", function () {
-    const code = `
-            function tmpl($api, $cmp, $slotset, $ctx) {
-            return [];
-            }
+    const source = `
+import _implicitStylesheets from "./test.css";
 
-            var _tmpl = registerTemplate(tmpl);
-            tmpl.stylesheets = [];
-            tmpl.stylesheetTokens = {
-            hostAttribute: "my-app_app-host",
-            shadowAttribute: "my-app_app"
-            };
+import { registerTemplate } from "lwc";
 
-            class App extends BaseLightningElement {}
+function tmpl($api, $cmp, $slotset, $ctx) {
+  const {} = $api;
+  return [];
+}
 
-            var MyApp = registerComponent(App, {
-            tmpl: _tmpl
-            });
+export default registerTemplate(tmpl);
+tmpl.stylesheets = [];
+
+if (_implicitStylesheets) {
+  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets)
+}
+tmpl.stylesheetTokens = {
+  hostAttribute: "my-test_test-host",
+  shadowAttribute: "my-test_test"
+};
         `.trim();
 
-    expect(convert(code)).toBe(
+    expect(convert('something.html', source)).toBe(
       `
-class App extends React.Component {
-    constructor(props) {
-        super(props);
-    }
+import _implicitStylesheets from "./test.css";
+import * as React from "react";
 
-    render() {
-        return null;
-    }
+function tmpl($cmp) {
+  return null;
 }
+
+export default tmpl;
+tmpl.stylesheets = [];
+
+if (_implicitStylesheets) {
+  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets);
+}
+
+tmpl.stylesheetTokens = {
+  hostAttribute: "my-test_test-host",
+  shadowAttribute: "my-test_test"
+};
         `.trim()
     );
   });
+
   it("should convert div with text", function () {
-    const code = `
-            function tmpl($api, $cmp, $slotset, $ctx) {
-            const {
-                t: api_text,
-                h: api_element
-            } = $api;
-            return [api_element("div", {
-                key: 0
-            }, [api_text("hi")])];
-            }
+    const source = `
+import _implicitStylesheets from "./test.css";
+import { registerTemplate } from "lwc";
 
-            var _tmpl = registerTemplate(tmpl);
-            tmpl.stylesheets = [];
-            tmpl.stylesheetTokens = {
-            hostAttribute: "my-app_app-host",
-            shadowAttribute: "my-app_app"
-            };
+function tmpl($api, $cmp, $slotset, $ctx) {
+  const {
+    t: api_text,
+    h: api_element
+  } = $api;
+  return [api_element("div", {
+    key: 0
+  }, [api_text("hi")])];
+}
 
-            class App extends BaseLightningElement {}
+export default registerTemplate(tmpl);
+tmpl.stylesheets = [];
 
-            var MyApp = registerComponent(App, {
-            tmpl: _tmpl
-            });
+if (_implicitStylesheets) {
+  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets);
+}
+
+tmpl.stylesheetTokens = {
+  hostAttribute: "my-test_test-host",
+  shadowAttribute: "my-test_test"
+};
         `.trim();
 
-    expect(convert(code)).toBe(
+    expect(convert('something.html', source)).toBe(
       `
-class App extends React.Component {
-    constructor(props) {
-        super(props);
-    }
+import _implicitStylesheets from "./test.css";
+import * as React from "react";
 
-    render() {
-        return React.createElement("div", null, "hi");
-    }
+function tmpl($cmp) {
+  return React.createElement("div", {
+    [tmpl.stylesheetTokens.shadowAttribute]: "true"
+  }, "hi");
 }
+
+export default tmpl;
+tmpl.stylesheets = [];
+
+if (_implicitStylesheets) {
+  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets);
+}
+
+tmpl.stylesheetTokens = {
+  hostAttribute: "my-test_test-host",
+  shadowAttribute: "my-test_test"
+};
         `.trim()
     );
   });
 
   it("should convert multiple nested divs with text", function () {
-    const code = `
+    const source = `
+import _implicitStylesheets from "./test.css";
+import { registerTemplate } from "lwc";
+
 function tmpl($api, $cmp, $slotset, $ctx) {
   const {
     t: api_text,
@@ -92,40 +121,55 @@ function tmpl($api, $cmp, $slotset, $ctx) {
   }, [api_text("hi 2")])])];
 }
 
-var _tmpl = registerTemplate(tmpl);
+export default registerTemplate(tmpl);
 tmpl.stylesheets = [];
+
+if (_implicitStylesheets) {
+  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets);
+}
+
 tmpl.stylesheetTokens = {
-  hostAttribute: "my-app_app-host",
-  shadowAttribute: "my-app_app"
+  hostAttribute: "my-test_test-host",
+  shadowAttribute: "my-test_test"
 };
-
-class App extends BaseLightningElement {}
-
-var MyApp = registerComponent(App, {
-  tmpl: _tmpl
-});
         `.trim();
 
-    expect(convert(code)).toBe(
+    expect(convert('something.html', source)).toBe(
       `
-class App extends React.Component {
-    constructor(props) {
-        super(props);
-    }
+import _implicitStylesheets from "./test.css";
+import * as React from "react";
 
-    render() {
-        return React.createElement("div", null, [
-            React.createElement("div", null, "hi 1"),
-            React.createElement("div", null, "hi 2")
-        ]);
-    }
+function tmpl($cmp) {
+  return React.createElement("div", {
+    [tmpl.stylesheetTokens.shadowAttribute]: "true"
+  }, [React.createElement("div", {
+    [tmpl.stylesheetTokens.shadowAttribute]: "true"
+  }, "hi 1"), React.createElement("div", {
+    [tmpl.stylesheetTokens.shadowAttribute]: "true"
+  }, "hi 2")]);
 }
+
+export default tmpl;
+tmpl.stylesheets = [];
+
+if (_implicitStylesheets) {
+  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets);
+}
+
+tmpl.stylesheetTokens = {
+  hostAttribute: "my-test_test-host",
+  shadowAttribute: "my-test_test"
+};
         `.trim()
     );
   });
 
   it("should convert class attributes", function () {
-    const code = `
+    const source = `
+import _implicitStylesheets from "./test.css";
+
+import { registerTemplate } from "lwc";
+
 function tmpl($api, $cmp, $slotset, $ctx) {
   const {
     t: api_text,
@@ -139,39 +183,50 @@ function tmpl($api, $cmp, $slotset, $ctx) {
   }, [api_text("text")])];
 }
 
-var _tmpl = registerTemplate(tmpl);
+export default registerTemplate(tmpl);
 tmpl.stylesheets = [];
+
+if (_implicitStylesheets) {
+  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets)
+}
 tmpl.stylesheetTokens = {
-  hostAttribute: "my-app_app-host",
-  shadowAttribute: "my-app_app"
+  hostAttribute: "my-test_test-host",
+  shadowAttribute: "my-test_test"
 };
-
-class App extends BaseLightningElement {}
-
-var MyApp = registerComponent(App, {
-  tmpl: _tmpl
-});
         `.trim();
 
-    expect(convert(code)).toBe(
+    expect(convert('something.html', source)).toBe(
       `
-class App extends React.Component {
-    constructor(props) {
-        super(props);
-    }
+import _implicitStylesheets from "./test.css";
+import * as React from "react";
 
-    render() {
-        return React.createElement("div", {
-            className: "hello"
-        }, "text");
-    }
+function tmpl($cmp) {
+  return React.createElement("div", {
+    [tmpl.stylesheetTokens.shadowAttribute]: "true",
+    className: "hello"
+  }, "text");
 }
+
+export default tmpl;
+tmpl.stylesheets = [];
+
+if (_implicitStylesheets) {
+  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets);
+}
+
+tmpl.stylesheetTokens = {
+  hostAttribute: "my-test_test-host",
+  shadowAttribute: "my-test_test"
+};
         `.trim()
     );
   });
 
   it("should convert style attributes", function () {
-    const code = `
+    const source = `
+import _implicitStylesheets from "./test.css";
+import { registerTemplate } from "lwc";
+
 function tmpl($api, $cmp, $slotset, $ctx) {
   const {
     t: api_text,
@@ -185,41 +240,54 @@ function tmpl($api, $cmp, $slotset, $ctx) {
   }, [api_text("text")])];
 }
 
-var _tmpl = registerTemplate(tmpl);
+export default registerTemplate(tmpl);
 tmpl.stylesheets = [];
+
+if (_implicitStylesheets) {
+  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets)
+}
 tmpl.stylesheetTokens = {
-  hostAttribute: "my-app_app-host",
-  shadowAttribute: "my-app_app"
+  hostAttribute: "my-test_test-host",
+  shadowAttribute: "my-test_test"
 };
-
-class App extends BaseLightningElement {}
-
-var MyApp = registerComponent(App, {
-  tmpl: _tmpl
-});
         `.trim();
 
-    expect(convert(code)).toBe(
+    expect(convert("something.html", source)).toBe(
       `
-class App extends React.Component {
-    constructor(props) {
-        super(props);
-    }
+import _implicitStylesheets from "./test.css";
+import * as React from "react";
 
-    render() {
-        return React.createElement("div", {
-            style: {
-                "color": "red"
-            }
-        }, "text");
+function tmpl($cmp) {
+  return React.createElement("div", {
+    [tmpl.stylesheetTokens.shadowAttribute]: "true",
+
+    style: {
+      "color": "red"
     }
+  }, "text");
 }
+
+export default tmpl;
+tmpl.stylesheets = [];
+
+if (_implicitStylesheets) {
+  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets);
+}
+
+tmpl.stylesheetTokens = {
+  hostAttribute: "my-test_test-host",
+  shadowAttribute: "my-test_test"
+};
         `.trim()
     );
   });
 
   it("should convert generic attributes", function () {
-    const code = `
+    const source = `
+import _implicitStylesheets from "./test.css";
+
+import { registerTemplate } from "lwc";
+
 function tmpl($api, $cmp, $slotset, $ctx) {
   const {
     t: api_text,
@@ -233,118 +301,239 @@ function tmpl($api, $cmp, $slotset, $ctx) {
   }, [api_text("text")])];
 }
 
-var _tmpl = registerTemplate(tmpl);
+export default registerTemplate(tmpl);
 tmpl.stylesheets = [];
+
+if (_implicitStylesheets) {
+  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets)
+}
 tmpl.stylesheetTokens = {
-  hostAttribute: "my-app_app-host",
-  shadowAttribute: "my-app_app"
+  hostAttribute: "my-test_test-host",
+  shadowAttribute: "my-test_test"
 };
-
-class App extends BaseLightningElement {}
-
-var MyApp = registerComponent(App, {
-  tmpl: _tmpl
-});
         `.trim();
 
-    expect(convert(code)).toBe(
+    expect(convert('something.html', source)).toBe(
       `
-class App extends React.Component {
-    constructor(props) {
-        super(props);
-    }
+import _implicitStylesheets from "./test.css";
+import * as React from "react";
 
-    render() {
-        return React.createElement("div", {
-            "title": "wow"
-        }, "text");
-    }
+function tmpl($cmp) {
+  return React.createElement("div", {
+    [tmpl.stylesheetTokens.shadowAttribute]: "true",
+    "title": "wow"
+  }, "text");
 }
+
+export default tmpl;
+tmpl.stylesheets = [];
+
+if (_implicitStylesheets) {
+  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets);
+}
+
+tmpl.stylesheetTokens = {
+  hostAttribute: "my-test_test-host",
+  shadowAttribute: "my-test_test"
+};
         `.trim()
     );
   });
 
   it("should convert complex heirarchy with attributes", function () {
     const code = `
+import _implicitStylesheets from "./test.css";
+
+import { registerTemplate } from "lwc";
+
+function tmpl($api, $cmp, $slotset, $ctx) {
+  const {
+    h: api_element,
+    t: api_text,
+    gid: api_scoped_id
+  } = $api;
+  return [api_element("figure", {
+    attrs: {
+      "role": "group"
+    },
+    key: 3
+  }, [api_element("img", {
+    styleMap: {
+      "border": "1px",
+      "borderColor": "red"
+    },
+    attrs: {
+      "src": "operahousesteps.jpg",
+      "alt": "The Sydney Opera House"
+    },
+    key: 0
+  }, []), api_element("figcaption", {
+    classMap: {
+      "something": true,
+      "else": true
+    },
+    key: 2
+  }, [api_text("We saw the opera "), api_element("cite", {
+    key: 1
+  }, [api_text("Barber of Seville")]), api_text(" here!")])])];
+}
+
+export default registerTemplate(tmpl);
+tmpl.stylesheets = [];
+
+if (_implicitStylesheets) {
+  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets)
+}
+tmpl.stylesheetTokens = {
+  hostAttribute: "my-test_test-host",
+  shadowAttribute: "my-test_test"
+};
+        `.trim();
+
+        expect(convert('something.html', code)).toBe(`
+import _implicitStylesheets from "./test.css";
+import * as React from "react";
+
+function tmpl($cmp) {
+  return React.createElement("figure", {
+    [tmpl.stylesheetTokens.shadowAttribute]: "true",
+    "role": "group"
+  }, [React.createElement("img", {
+    [tmpl.stylesheetTokens.shadowAttribute]: "true",
+    "src": "operahousesteps.jpg",
+    "alt": "The Sydney Opera House",
+
+    style: {
+      "border": "1px",
+      "borderColor": "red"
+    }
+  }, null), React.createElement("figcaption", {
+    [tmpl.stylesheetTokens.shadowAttribute]: "true",
+    className: "something else"
+  }, ["We saw the opera ", React.createElement("cite", {
+    [tmpl.stylesheetTokens.shadowAttribute]: "true"
+  }, "Barber of Seville"), " here!"])]);
+}
+
+export default tmpl;
+tmpl.stylesheets = [];
+
+if (_implicitStylesheets) {
+  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets);
+}
+
+tmpl.stylesheetTokens = {
+  hostAttribute: "my-test_test-host",
+  shadowAttribute: "my-test_test"
+};
+        `.trim())
+  });
+
+  it('should convert the lwc class into a react class that renders the template', function() {
+    const source = `
+import _tmpl from "./test.html";
+import { registerComponent as _registerComponent } from "lwc";
+import { LightningElement } from 'lwc';
+
+class Test extends LightningElement {}
+
+export default _registerComponent(Test, {
+  tmpl: _tmpl
+});
+    `
+
+    expect(convert('something.js', source)).toBe(`
+import _tmpl from "./test.html";
+import * as React from "react";
+
+class Test extends React.Component {
+  render() {
+    return _tmpl(this);
+  }
+
+  componentDidMount() {
+    this.mounted = true;
+    this.stylesheets = [];
+
+    _tmpl.stylesheets.forEach(stylesheet => {
+      const sheet = document.createElement("style");
+      sheet.type = "text/css";
+
+      sheet.textContent = stylesheet(
+        "[scoped" + _tmpl.stylesheetTokens.hostAttribute + "]",
+        "[scoped" + _tmpl.stylesheetTokens.shadowAttribute + "]",
+        null
+      );
+
+      document.head.appendChild(sheet);
+      this.stylesheets.push(sheet);
+    });
+  }
+
+  componentWillUnmount() {
+    this.mounted = false;
+
+    this.stylesheets.forEach(sheet => {
+      if (sheet.parentNode)
+        sheet.parentNode.removeChild(sheet);
+    });
+  }
+}
+
+export default Test;
+    `.trim());
+  });
+
+  it('should generate the proper template with api bound props', function() {
+    const source = `
+import _implicitStylesheets from "./product.css";
+
+import { registerTemplate } from "lwc";
+
 function tmpl($api, $cmp, $slotset, $ctx) {
   const {
     t: api_text,
+    d: api_dynamic,
     h: api_element
   } = $api;
-  return [api_element("div", {
-    classMap: {
-      "some-class": true
-    },
-    attrs: {
-      "title": "wow"
-    },
-    key: 6
-  }, [api_element("section", {
-    key: 2
-  }, [api_element("h1", {
+  return [api_element("h1", {
     key: 0
-  }, [api_text("WWF")]), api_element("p", {
-    key: 1
-  }, [api_text("The World Wide Fund for Nature (WWF) is....")])]), api_element("section", {
-    attrs: {
-      "aria-current": "true"
-    },
-    key: 5
-  }, [api_element("ul", {
-    classMap: {
-      "list": true
-    },
-    key: 4
-  }, [api_element("li", {
-    styleMap: {
-      "color": "red",
-      "background": "blue"
-    },
-    key: 3
-  }, [api_text("Some list element")])])])])];
+  }, [api_text("Product: "), api_dynamic($cmp.params.productId)])];
 }
 
-var _tmpl = registerTemplate(tmpl);
+export default registerTemplate(tmpl);
 tmpl.stylesheets = [];
-tmpl.stylesheetTokens = {
-  hostAttribute: "my-app_app-host",
-  shadowAttribute: "my-app_app"
-};
 
-class App extends BaseLightningElement {}
-
-var MyApp = registerComponent(App, {
-  tmpl: _tmpl
-});
-        `.trim();
-
-    expect(convert(code)).toBe(
-      `
-class App extends React.Component {
-    constructor(props) {
-        super(props);
-    }
-
-    render() {
-        return React.createElement("div", {
-            "title": "wow",
-            className: "some-class"
-        }, [React.createElement("section", null, [
-            React.createElement("h1", null, "WWF"),
-            React.createElement("p", null, "The World Wide Fund for Nature (WWF) is....")
-        ]), React.createElement("section", {
-            "aria-current": "true"
-        }, React.createElement("ul", {
-            className: "list"
-        }, React.createElement("li", {
-            style: {
-                "color": "red",
-                "background": "blue"
-            }
-        }, "Some list element")))]);
-    }
+if (_implicitStylesheets) {
+  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets)
 }
-        `.trim()
-    );
-  });
+tmpl.stylesheetTokens = {
+  hostAttribute: "my-product_product-host",
+  shadowAttribute: "my-product_product"
+};
+`
+expect(convert('something.html', source)).toBe(`
+import _implicitStylesheets from "./product.css";
+import * as React from "react";
+
+function tmpl($cmp) {
+  return React.createElement("h1", {
+    [tmpl.stylesheetTokens.shadowAttribute]: "true"
+  }, ["Product: ", $cmp.productId]);
+}
+
+export default tmpl;
+tmpl.stylesheets = [];
+
+if (_implicitStylesheets) {
+  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets);
+}
+
+tmpl.stylesheetTokens = {
+  hostAttribute: "my-product_product-host",
+  shadowAttribute: "my-product_product"
+};
+`.trim())
+
+  })
 });

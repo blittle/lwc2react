@@ -1,4 +1,5 @@
 import { parse, prettyPrint, types } from "recast";
+
 const b = types.builders;
 const n = types.namedTypes;
 
@@ -29,48 +30,46 @@ function getTemplateAST(ast) {
 }
 
 function getClassAST(ast) {
-  return ast.program.body.find((element) => n.ClassDeclaration.check(element));
-}
-
-function buildReactClassAST(
-  name,
-  templateAST,
-  classAST,
-  styleAST,
-  publicProps
-) {
-  const body = [
-    buildConstructor(templateAST, classAST, styleAST, publicProps),
-    buildRenderMethod(templateAST, classAST, styleAST, publicProps),
-    ...buildMethods(classAST, publicProps),
-  ];
-
-  buildStyles(body, styleAST);
-
-  return b.classDeclaration(
-    b.identifier(name),
-    b.classBody(body.filter(Boolean)),
-    b.identifier("React.Component")
+  return ast.program.body.find(
+    (element) =>
+      n.ClassDeclaration.check(element) &&
+      element.superClass.name === "LightningElement"
   );
 }
 
-function buildStyles(body, styleAST) {
-  if (!styleAST) return;
+function convertClass(classAST, templateIdentifier, publicProps) {
+  classAST.superClass = b.identifier("React.Component");
+  convertMethods(classAST, publicProps);
+  buildRenderMethod(classAST, templateIdentifier);
+  buildStyles(classAST, templateIdentifier);
+  convertConstructorBlock(classAST, publicProps);
+}
 
+function buildStyles(classAST, templateIdentifier) {
   const didMountText = parse(`
-    const css = document.createElement('style');
-    css.type = "text/css";
-
-    css.textContent = ${styleAST.id.name}(null, "[scoped" + this.___scopedSelector + "]", null);
-    document.head.appendChild(css);
-    this.___css = css;
+    this.mounted = true;
+    this.stylesheets = [];
+    ${templateIdentifier}.stylesheets.forEach(stylesheet => {
+        const sheet = document.createElement("style");
+        sheet.type = "text/css";
+        sheet.textContent = stylesheet(
+          "[scoped" + ${templateIdentifier}.stylesheetTokens.hostAttribute + "]",
+          "[scoped" + ${templateIdentifier}.stylesheetTokens.shadowAttribute + "]",
+           null
+        );
+        document.head.appendChild(sheet);
+        this.stylesheets.push(sheet);
+    })
   `);
 
   const willUnmountText = parse(`
-    this.___css.parentNode.removeChild(this.___css);
+    this.mounted = false;
+    this.stylesheets.forEach(sheet => {
+      if (sheet.parentNode) sheet.parentNode.removeChild(sheet);
+    })
   `);
 
-  body.push(
+  classAST.body.body.push(
     b.methodDefinition(
       "method",
       b.identifier("componentDidMount"),
@@ -82,7 +81,7 @@ function buildStyles(body, styleAST) {
     )
   );
 
-  body.push(
+  classAST.body.body.push(
     b.methodDefinition(
       "method",
       b.identifier("componentWillUnmount"),
@@ -95,9 +94,14 @@ function buildStyles(body, styleAST) {
   );
 }
 
-function buildMethods(classAST, publicProps) {
+function convertMethods(classAST, publicProps) {
   return classAST.body.body
-    .filter((property) => property?.kind === "method" || property?.kind === 'get' || property?.kind === 'set')
+    .filter(
+      (property) =>
+        property?.kind === "method" ||
+        property?.kind === "get" ||
+        property?.kind === "set"
+    )
     .map((method) => {
       return b.methodDefinition(
         method.kind,
@@ -133,36 +137,20 @@ function processAssignmentExpression(assignment, options) {
     n.MemberExpression.check(expression.left) &&
     n.ThisExpression.check(expression.left.object)
   ) {
-    if (inConstructor) {
-      if (publicProps.includes(expression.left.property.name)) {
-        return null;
-      }
+    if (publicProps.includes(expression.left.property.name)) {
+      return null;
+    }
 
-      return b.expressionStatement(
-        b.assignmentExpression(
-          "=",
-          b.memberExpression(
-            b.thisExpression(),
-            b.identifier(`state.${expression.left.property.name}`)
-          ),
-          expression.right
-        )
-      );
-    } else {
-      return b.expressionStatement(
+    return b.expressionStatement(
+      b.assignmentExpression(
+        "=",
         b.memberExpression(
           b.thisExpression(),
-          b.callExpression(b.identifier("setState"), [
-            b.objectExpression([
-              b.objectProperty(
-                expression.left.property,
-                processExpression(expression.right, options)
-              ),
-            ]),
-          ])
-        )
-      );
-    }
+          b.identifier(`__s.${expression.left.property.name}`)
+        ),
+        processExpression(expression.right, options)
+      )
+    );
   }
 
   return assignment;
@@ -172,6 +160,9 @@ function processElement(element, options) {
   if (n.ExpressionStatement.check(element)) {
     if (n.AssignmentExpression.check(element.expression)) {
       return processAssignmentExpression(element, options);
+    }
+    if (n.UpdateExpression.check(element.expression)) {
+      return processUpdateExpression(element, options);
     }
 
     if (n.CallExpression.check(element.expression)) {
@@ -188,15 +179,24 @@ function processElement(element, options) {
   return element;
 }
 
+function processUpdateExpression(element, options) {
+  element.expression.argument = processExpression(
+    element.expression.argument,
+    options
+  );
+  return element;
+}
+
 function processReturnStatement(returnStatement, options) {
-  returnStatement.argument = processExpression(returnStatement.argument, options);
+  returnStatement.argument = processExpression(
+    returnStatement.argument,
+    options
+  );
   return returnStatement;
 }
 
 function processCallExpression(callExpression, { publicProps }) {
-  if (callExpression?.expression?.callee?.type === "Super") {
-    callExpression.expression.arguments = [b.identifier("props")];
-  } else if (publicProps && publicProps.length) {
+  if (publicProps && publicProps.length) {
     // @todo make sure to call prop methods
   }
 
@@ -223,15 +223,13 @@ function processVariableDeclaration(element, options) {
 }
 
 function processExpression(expression, options) {
-  const { publicProps } = options;
+  const { publicProps, inTemplate } = options;
 
   if (
     n.MemberExpression.check(expression) &&
     n.ThisExpression.check(expression.object)
   ) {
-    return b.identifier(
-        getRefString(expression.property.name, publicProps)
-      )
+    return b.identifier(getRefString(expression.property.name, publicProps, inTemplate));
   }
 
   if (n.BinaryExpression.check(expression)) {
@@ -259,69 +257,51 @@ function processIfStatement(element, options) {
   return element;
 }
 
-function buildConstructor(templateAST, classAST, styleAST, publicProps) {
-  return b.methodDefinition(
-    "constructor",
-    b.identifier("constructor"),
-    b.functionExpression(
-      b.identifier("constructor"),
-      [b.identifier("props")],
-      processConstructorBlock(classAST, styleAST, publicProps)
-    )
-  );
-}
-
-function processConstructorBlock(ast, styleAST, publicProps) {
-  const constructorAST = ast.body.body.find(
+function convertConstructorBlock(classAST, publicProps) {
+  const constructorAST = classAST.body.body.find(
     (prop) => prop.kind === "constructor"
   );
 
   if (constructorAST) {
-    const block = processBlock(constructorAST.value.body, {
+    constructorAST.value.body = processBlock(constructorAST.value.body, {
       inConstructor: true,
       publicProps,
     });
 
+    const membrane = parse(`
+      const membrane = new ObservableMembrane({
+        valueMutated: () => {
+          if (this.mounted) this.forceUpdate()
+        }
+      });
+
+      this.__s = membrane.getProxy({});
+    `);
+
     // initialize empty state
-    block.body.splice(
+    constructorAST.value.body.body.splice(
       1,
       0,
-      b.expressionStatement(
-        b.assignmentExpression(
-          "=",
-          b.identifier("this.state"),
-          b.objectExpression([])
-        )
-      )
+      membrane.program.body[0],
+      membrane.program.body[1]
     );
-    const [superCall, ...rest] = block.body;
-    block.body = [superCall, ...buildScopedSelector(styleAST), ...rest];
-    return block;
-  } else {
-    return b.blockStatement([
-      b.expressionStatement(
-        b.callExpression(b.identifier("super"), [b.identifier("props")])
-      ),
-      ...buildScopedSelector(styleAST),
-    ]);
   }
 }
-function buildScopedSelector(styleAST) {
-  return styleAST
-    ? parse(`window.___cssUniqueCounter = window.___cssUniqueCounter || 0;
-    window.___cssUniqueCounter++;
-    this.___scopedSelector = window.___cssUniqueCounter;`).program.body
-    : [];
-}
 
-function buildRenderMethod(templateAST, classAST, styleAST, publicProps) {
-  return b.methodDefinition(
-    "method",
-    b.identifier("render"),
-    b.functionExpression(
+function buildRenderMethod(classAST, templateIdentifier) {
+  // maybe extending `this` like this is not okay?
+  const render = parse(`function render() {
+    return ${templateIdentifier}(Object.assign(this, this.__s, this.props))
+  }`);
+  classAST.body.body.push(
+    b.methodDefinition(
+      "method",
       b.identifier("render"),
-      [],
-      buildReactCreateElements(templateAST, classAST, styleAST, publicProps)
+      b.functionExpression(
+        b.identifier("render"),
+        [],
+        render.program.body[0].body
+      )
     )
   );
 }
@@ -329,7 +309,7 @@ function buildRenderMethod(templateAST, classAST, styleAST, publicProps) {
 function buildReactCreateElements(
   templateAST,
   classAST,
-  styleAST,
+  templateIdentifier,
   publicProps
 ) {
   const returnAst = templateAST.body.body[1];
@@ -337,21 +317,25 @@ function buildReactCreateElements(
   return b.blockStatement([
     b.returnStatement(
       returnAst
-        ? recurseElementTree(returnAst.argument.elements, styleAST, publicProps)
+        ? recurseElementTree(
+            returnAst.argument.elements,
+            templateIdentifier,
+            publicProps
+          )
         : b.nullLiteral()
     ),
   ]);
 }
 
-function recurseElementTree(astArray, styleAST, publicProps) {
+function recurseElementTree(astArray, templateIdentifier, publicProps) {
   const process = (element) => {
     if (element?.callee?.name === "api_element") {
       return b.callExpression(b.identifier("React.createElement"), [
         element.arguments[0],
-        buildProps(element, false, styleAST, publicProps),
+        buildProps(element, false, templateIdentifier, publicProps),
         recurseElementTree(
           element.arguments[2]?.elements,
-          styleAST,
+          templateIdentifier,
           publicProps
         ),
       ]);
@@ -359,15 +343,15 @@ function recurseElementTree(astArray, styleAST, publicProps) {
       return element.arguments[0]; // return the string literal
     } else if (element?.callee?.name === "api_dynamic") {
       return b.identifier(
-          getRefString(element.arguments[0].property.name, publicProps)
-        )
+        getRefString(element.arguments[0].property.name, publicProps, true)
+      );
     } else if (element?.callee?.name === "api_custom_element") {
       return b.callExpression(b.identifier("React.createElement"), [
         element.arguments[1],
-        buildProps(element, true, styleAST, publicProps),
+        buildProps(element, true, templateIdentifier, publicProps),
         recurseElementTree(
           element.arguments[3]?.elements,
-          styleAST,
+          templateIdentifier,
           publicProps
         ),
       ]);
@@ -379,11 +363,15 @@ function recurseElementTree(astArray, styleAST, publicProps) {
   if (astArray.length === 1) {
     return process(astArray[0]);
   } else {
-    return b.arrayExpression(astArray.map(process));
+    if (!astArray.length) {
+      return b.nullLiteral();
+    } else {
+      return b.arrayExpression(astArray.map(process));
+    }
   }
 }
 
-function buildProps(element, component, styleAST, publicProps) {
+function buildProps(element, component, templateIdentifier, publicProps) {
   const index = component ? 2 : 1;
 
   const classMap = element.arguments[index].properties.find(
@@ -404,14 +392,12 @@ function buildProps(element, component, styleAST, publicProps) {
 
   const props = [];
 
-  if (styleAST) {
-    props.push(
-      b.objectProperty(
-        b.identifier('["scoped"+this.___scopedSelector]'),
-        b.stringLiteral("true")
-      )
-    );
-  }
+  props.push(
+    b.objectProperty(
+      b.identifier(`[${templateIdentifier}.stylesheetTokens.shadowAttribute]`),
+      b.stringLiteral("true")
+    )
+  );
 
   if (propMap) {
     propMap.value.properties.forEach((prop) => {
@@ -442,7 +428,7 @@ function buildProps(element, component, styleAST, publicProps) {
     props.push(
       b.objectProperty(
         b.identifier("className"),
-        b.identifier(getRefString(className.value.property.name, publicProps))
+        b.identifier(getRefString(className.value.property.name, publicProps, true))
       )
     );
   }
@@ -450,19 +436,20 @@ function buildProps(element, component, styleAST, publicProps) {
   return props.length ? b.objectExpression(props) : b.nullLiteral();
 }
 
-function getRefString(ref, publicProps) {
-  return publicProps.includes(ref)
+function getRefString(ref, publicProps, inTemplate) {
+  return inTemplate
+    ? `$cmp.${ref}`
+    : publicProps.includes(ref)
     ? `this.props.${ref}`
-    : `this.state.${ref}`;
+    : `this.__s.${ref}`;
 }
 
 function processProp(prop, publicProps) {
-  if (n.MemberExpression.check(prop.value) && prop.value.object.name === '$cmp') {
-    if (publicProps.includes(prop.value.property.name)) {
-      prop.value.object = b.identifier('this.props');
-    } else {
-      prop.value.object = b.thisExpression();
-    }
+  if (
+    n.MemberExpression.check(prop.value) &&
+    prop.value.object.name === "$cmp"
+  ) {
+    prop.value.object = b.identifier('$cmp');
   }
 
   return prop;
@@ -480,34 +467,106 @@ function getPublicProps(ast) {
   );
 
   if (registerDecorators) {
-    return registerDecorators.expression?.arguments[1]?.properties
-      .find((prop) => prop.key.name === "publicProps")
-      ?.value?.properties.map((prop) => prop.key.name) || [];
+    return (
+      registerDecorators.expression?.arguments[1]?.properties
+        .find((prop) => prop.key.name === "publicProps")
+        ?.value?.properties.map((prop) => prop.key.name) || []
+    );
   }
 
   return [];
 }
 
-export function convert(input) {
-  const ast = parse(input);
+function removeLWCCode(ast) {
+  const lwcIndex1 = ast.program.body.findIndex(
+    (el) => n.ImportDeclaration.check(el) && el.source.value === "lwc"
+  );
+  ast.program.body[lwcIndex1] = parse(
+    'import React from "react"'
+  ).program.body[0];
 
-  const publicProps = getPublicProps(ast);
-  const name = getRootComponent(ast);
-  const styleAST = getStyleAST(ast);
-  const templateAST = getTemplateAST(ast);
-  const classAST = getClassAST(ast);
-
-  while (ast.program.body.length) {
-    ast.program.body.shift();
-  }
-
-  if (styleAST) {
-    ast.program.body.push(styleAST);
-  }
-
-  ast.program.body.push(
-    buildReactClassAST(name, templateAST, classAST, styleAST, publicProps)
+  let lwcIndex2 = ast.program.body.findIndex(
+    (el) => n.ImportDeclaration.check(el) && el.source.value === "lwc"
   );
 
-  return prettyPrint(ast, { tabWidth: 4 }).code;
+  while (lwcIndex2 !== -1) {
+    ast.program.body.splice(lwcIndex2, 1);
+    lwcIndex2 = ast.program.body.findIndex(
+      (el) => n.ImportDeclaration.check(el) && el.source.value === "lwc"
+    );
+  }
+
+  const registerDecoratorsIndex = ast.program.body.findIndex(
+    (el) =>
+      n.ExpressionStatement.check(el) &&
+      n.CallExpression.check(el.expression) &&
+      el.expression.callee.name === "_registerDecorators"
+  );
+
+  if (registerDecoratorsIndex !== -1) {
+    ast.program.body.splice(registerDecoratorsIndex, 1);
+  }
+}
+
+function convertTemplate(ast) {
+  const templateAST = getTemplateAST(ast);
+
+  const exportStatement = ast.program.body.find((el) =>
+    n.ExportDefaultDeclaration.check(el)
+  );
+  const templateIdentifier = exportStatement.declaration.arguments[0].name;
+
+  removeLWCCode(ast);
+
+  templateAST.params = [b.identifier("$cmp")];
+  templateAST.body = buildReactCreateElements(
+    templateAST,
+    null,
+    templateIdentifier,
+    null
+  );
+
+  exportStatement.declaration = exportStatement.declaration.arguments[0];
+
+  return prettyPrint(ast, { tabWidth: 2 }).code;
+}
+
+function convertJavaScript(ast) {
+  const classAST = getClassAST(ast);
+  if (classAST) {
+    const publicProps = getPublicProps(ast);
+    removeLWCCode(ast);
+
+    ast.program.body.unshift(
+      parse("import ObservableMembrane from 'observable-membrane'").program.body[0]
+    )
+
+    const exportStatement = ast.program.body.find((el) =>
+      n.ExportDefaultDeclaration.check(el)
+    );
+    const templateIdentifier = exportStatement.declaration.arguments[1].properties.find(
+      (prop) => prop.key.name === "tmpl"
+    ).value.name;
+
+    exportStatement.declaration = exportStatement.declaration.arguments[0];
+
+    convertClass(classAST, templateIdentifier, publicProps);
+  }
+
+  return prettyPrint(ast, { tabWidth: 2 }).code;
+}
+
+export function convert(id, source) {
+  if (id.includes("@lwc/engine/dist/engine.js") || id.includes("wire-service"))
+    return 'export default undefined';
+
+  const ast = parse(source);
+
+  if (id.endsWith(".html")) {
+    return convertTemplate(ast);
+  } else if (id.endsWith(".css")) {
+    return source;
+  } else {
+    return convertJavaScript(ast);
+  }
 }
