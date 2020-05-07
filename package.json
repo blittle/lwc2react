@@ -6,6 +6,7 @@
   "homepage": "https://github.com/blittle/lwc2react",
   "scripts": {
     "test": "jest --verbose --coverage",
+    "prepublish": "npm run build",
     "build": "babel src -d lib"
   },
   "author": "Bret Little",
