@@ -2,7 +2,7 @@ import pluginUtils from "@rollup/pluginutils";
 import { compile } from "./compiler";
 
 export default function rollupLWC2ReactCompiler(pluginOptions = {}) {
-  let { include, exclude } = pluginOptions;
+  let { include, exclude, debug } = pluginOptions;
 
   exclude = exclude || [
     "**/@lwc/engine/**",
@@ -15,7 +15,9 @@ export default function rollupLWC2ReactCompiler(pluginOptions = {}) {
   return {
     name: "rollup-lwc2react-compiler",
     async transform(src, id) {
-    console.log(id, filter(id));
+      if (debug) {
+        console.log("lwc2react -> ", id, filter(id));
+      }
       if (!filter(id)) {
         return;
       }
