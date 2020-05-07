@@ -1,4 +1,4 @@
-import { convert } from "../src/index";
+import { compile } from "../src/compiler";
 
 describe("Component composition", function () {
   it("should render nested component", function () {
@@ -29,7 +29,7 @@ tmpl.stylesheetTokens = {
 };
         `.trim();
 
-    expect(convert('something.html', code)).toBe(
+    expect(compile('something.html', code)).toBe(
       `
 import _implicitStylesheets from "./app.css";
 import _myComp from "my/comp";
@@ -37,7 +37,8 @@ import React from "react";
 
 function tmpl($cmp) {
   return React.createElement(_myComp, {
-    [tmpl.stylesheetTokens.shadowAttribute]: "true"
+    [tmpl.stylesheetTokens.shadowAttribute]: "true",
+    ref: $cmp.template
   }, null);
 }
 
@@ -96,7 +97,7 @@ tmpl.stylesheetTokens = {
 };
         `.trim();
 
-    expect(convert("temp.html", code)).toBe(
+    expect(compile("temp.html", code)).toBe(
       `
 import _implicitStylesheets from "./app.css";
 import _myComp from "my/comp";
@@ -105,6 +106,7 @@ import React from "react";
 function tmpl($cmp) {
   return React.createElement(_myComp, {
     [tmpl.stylesheetTokens.shadowAttribute]: "true",
+    ref: $cmp.template,
     "wow": $cmp.wow
   }, {
     "": React.createElement("h1", {
@@ -166,7 +168,7 @@ tmpl.stylesheetTokens = {
 };
         `.trim();
 
-    expect(convert('temp.html', code)).toBe(
+    expect(compile('temp.html', code)).toBe(
       `
 import _implicitStylesheets from "./comp.css";
 import React from "react";
@@ -235,7 +237,7 @@ tmpl.stylesheetTokens = {
 };
         `.trim();
 
-    expect(convert('temp.html', code)).toBe(
+    expect(compile('temp.html', code)).toBe(
       `
 import _implicitStylesheets from "./comp.css";
 import React from "react";
@@ -255,6 +257,61 @@ function tmpl($cmp) {
 
 export default tmpl;
 tmpl.slots = ["", "b"];
+tmpl.stylesheets = [];
+
+if (_implicitStylesheets) {
+  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets);
+}
+
+tmpl.stylesheetTokens = {
+  hostAttribute: "my-comp_comp-host",
+  shadowAttribute: "my-comp_comp"
+};
+      `.trim()
+    );
+  });
+
+  it("should compile complex object @api properties", function () {
+    const code = `
+import _implicitStylesheets from "./comp.css";
+
+import { registerTemplate } from "lwc";
+
+function tmpl($api, $cmp, $slotset, $ctx) {
+  const {
+    d: api_dynamic,
+    h: api_element
+  } = $api;
+  return [api_element("span", {
+    key: 0
+  }, [api_dynamic($cmp.prop.value)])];
+}
+
+export default registerTemplate(tmpl);
+tmpl.stylesheets = [];
+
+if (_implicitStylesheets) {
+  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets)
+}
+tmpl.stylesheetTokens = {
+  hostAttribute: "my-comp_comp-host",
+  shadowAttribute: "my-comp_comp"
+};
+        `.trim();
+
+    expect(compile('temp.html', code)).toBe(
+      `
+import _implicitStylesheets from "./comp.css";
+import React from "react";
+
+function tmpl($cmp) {
+  return React.createElement("span", {
+    [tmpl.stylesheetTokens.shadowAttribute]: "true",
+    ref: $cmp.template
+  }, $cmp.prop.value);
+}
+
+export default tmpl;
 tmpl.stylesheets = [];
 
 if (_implicitStylesheets) {

@@ -1,4 +1,4 @@
-import { convert } from "../src/index";
+import { compile } from "../src/compiler";
 
 describe("Class bindings", function () {
   it("should add observable membrane for basic bindings", function () {
@@ -29,7 +29,7 @@ export default _registerComponent(Test, {
 });
     `;
 
-    expect(convert("something.js", source)).toBe(
+    expect(compile("something.js", source)).toBe(
       `
 import ObservableMembrane from "observable-membrane";
 import React from "react";
@@ -47,6 +47,7 @@ class Test extends React.Component {
     });
 
     this.__s = membrane.getProxy({});
+    this.template = React.createRef();
     this.__s.a = 1;
   }
 
@@ -120,7 +121,7 @@ export default _registerComponent(Test, {
 });
     `;
 
-    expect(convert("something.js", source)).toBe(
+    expect(compile("something.js", source)).toBe(
       `
 import ObservableMembrane from "observable-membrane";
 import React from "react";
@@ -138,6 +139,7 @@ class Test extends React.Component {
     });
 
     this.__s = membrane.getProxy({});
+    this.template = React.createRef();
     this.__s.a = 1;
   }
 
@@ -183,7 +185,7 @@ export default Test;
     );
   });
 
-  it("should convert method called from constructor", function () {
+  it("should compile method called from constructor", function () {
     const code = `
 import { registerDecorators as _registerDecorators } from "lwc";
 import _tmpl from "./app.html";
@@ -213,7 +215,7 @@ export default _registerComponent(App, {
 });
       `.trim();
 
-    expect(convert('sample.js', code)).toBe(
+    expect(compile('sample.js', code)).toBe(
       `
 import ObservableMembrane from "observable-membrane";
 import React from "react";
@@ -231,6 +233,7 @@ class App extends React.Component {
     });
 
     this.__s = membrane.getProxy({});
+    this.template = React.createRef();
     this.__s.wow = "hi2";
     this.__s.other = "hi3";
     this.doSomething();
@@ -278,7 +281,7 @@ export default App;
     );
   });
 
-  it("should convert @api props", function () {
+  it("should compile @api props", function () {
     const code = `
 import { registerDecorators as _registerDecorators } from "lwc";
 import _tmpl from "./app.html";
@@ -305,7 +308,7 @@ export default _registerComponent(App, {
   tmpl: _tmpl
 });
   `;
-    expect(convert('sample.js', code)).toBe(
+    expect(compile('sample.js', code)).toBe(
       `
 import ObservableMembrane from "observable-membrane";
 import React from "react";
@@ -323,6 +326,7 @@ class App extends React.Component {
     });
 
     this.__s = membrane.getProxy({});
+    this.template = React.createRef();
     this.__s.publicProp = void 0;
   }
 
@@ -364,7 +368,7 @@ export default App;
     );
   });
 
-  it("should convert @api props with default values", function () {
+  it("should compile @api props with default values", function () {
     const code = `
 import { registerDecorators as _registerDecorators } from "lwc";
 import _tmpl from "./app.html";
@@ -391,7 +395,7 @@ export default _registerComponent(App, {
   tmpl: _tmpl
 });
   `;
-    expect(convert('sample.js', code)).toBe(
+    expect(compile('sample.js', code)).toBe(
       `
 import ObservableMembrane from "observable-membrane";
 import React from "react";
@@ -409,6 +413,7 @@ class App extends React.Component {
     });
 
     this.__s = membrane.getProxy({});
+    this.template = React.createRef();
     this.__s.publicProp = "some default";
   }
 
@@ -450,7 +455,7 @@ export default App;
     );
   });
 
-  it("should convert @api with a getter and styles", function () {
+  it("should compile @api with a getter and styles", function () {
     const code = `
 import { registerDecorators as _registerDecorators } from "lwc";
 import _tmpl from "./app.html";
@@ -493,7 +498,7 @@ export default _registerComponent(ProductImage, {
   tmpl: _tmpl
 });
   `;
-    expect(convert('sample.js', code)).toBe(
+    expect(compile('sample.js', code)).toBe(
       `
 import ObservableMembrane from "observable-membrane";
 import React from "react";
@@ -511,6 +516,7 @@ class ProductImage extends React.Component {
     });
 
     this.__s = membrane.getProxy({});
+    this.template = React.createRef();
     this.__s.imageUrl = void 0;
     this.__s.productName = "name";
   }

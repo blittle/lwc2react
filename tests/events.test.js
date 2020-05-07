@@ -1,4 +1,4 @@
-import { convert } from "../src/index";
+import { compile } from "../src/compiler";
 
 describe("Events", function () {
   it("bound events in template", function () {
@@ -41,14 +41,15 @@ tmpl.stylesheetTokens = {
 };
     `;
 
-    expect(convert("something.html", source)).toBe(
+    expect(compile("something.html", source)).toBe(
       `
 import _implicitStylesheets from "./app.css";
 import React from "react";
 
 function tmpl($cmp) {
   return React.createElement("div", {
-    [tmpl.stylesheetTokens.shadowAttribute]: "true"
+    [tmpl.stylesheetTokens.shadowAttribute]: "true",
+    ref: $cmp.template
   }, [React.createElement("span", {
     [tmpl.stylesheetTokens.shadowAttribute]: "true"
   }, $cmp.something), React.createElement("button", {

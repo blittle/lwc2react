@@ -1,4 +1,4 @@
-import { convert } from "../src/index";
+import { compile } from "../src/compiler";
 
 describe("Lifecycles", function () {
   it("connectedCallback", function () {
@@ -30,7 +30,7 @@ export default _registerComponent(Test, {
 });
     `;
 
-    expect(convert("something.js", source)).toBe(
+    expect(compile("something.js", source)).toBe(
       `
 import ObservableMembrane from "observable-membrane";
 import React from "react";
@@ -48,6 +48,7 @@ class Test extends React.Component {
     });
 
     this.__s = membrane.getProxy({});
+    this.template = React.createRef();
     this.__s.a = 1;
   }
 
@@ -122,7 +123,7 @@ export default _registerComponent(Test, {
 });
     `;
 
-    expect(convert("something.js", source)).toBe(
+    expect(compile("something.js", source)).toBe(
       `
 import ObservableMembrane from "observable-membrane";
 import React from "react";
@@ -140,6 +141,7 @@ class Test extends React.Component {
     });
 
     this.__s = membrane.getProxy({});
+    this.template = React.createRef();
     this.__s.a = 1;
   }
 
@@ -214,7 +216,7 @@ export default _registerComponent(Test, {
 });
     `;
 
-    expect(convert("something.js", source)).toBe(
+    expect(compile("something.js", source)).toBe(
       `
 import ObservableMembrane from "observable-membrane";
 import React from "react";
@@ -232,6 +234,7 @@ class Test extends React.Component {
     });
 
     this.__s = membrane.getProxy({});
+    this.template = React.createRef();
     this.__s.a = 1;
   }
 
@@ -308,7 +311,7 @@ export default _registerComponent(Test, {
 });
     `;
 
-    expect(convert("something.js", source)).toBe(
+    expect(compile("something.js", source)).toBe(
       `
 import ObservableMembrane from "observable-membrane";
 import React from "react";
@@ -326,6 +329,7 @@ class Test extends React.Component {
     });
 
     this.__s = membrane.getProxy({});
+    this.template = React.createRef();
     this.__s.a = 1;
   }
 

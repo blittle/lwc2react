@@ -1,4 +1,4 @@
-import { convert } from "../src/index";
+import { compile } from "../src/compiler";
 
 describe("Scoped CSS", function () {
   it("should generate scoped css logic", function () {
@@ -9,6 +9,6 @@ function stylesheet(hostSelector, shadowSelector, nativeShadow) {
 export default [stylesheet];
         `.trim();
 
-    expect(convert('something.css', code)).toBe(code);
+    expect(compile('something.css', code)).toBe(code);
   });
 });

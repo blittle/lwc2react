@@ -1,7 +1,7 @@
-import { convert } from "../src/index";
+import { compile } from "../src/compiler";
 
-describe("templates", function() {
-  it("should convert an empty component", function () {
+describe("templates", function () {
+  it("should compile an empty component", function () {
     const source = `
 import _implicitStylesheets from "./test.css";
 
@@ -24,7 +24,7 @@ tmpl.stylesheetTokens = {
 };
         `.trim();
 
-    expect(convert('something.html', source)).toBe(
+    expect(compile("something.html", source)).toBe(
       `
 import _implicitStylesheets from "./test.css";
 import React from "react";
@@ -48,7 +48,7 @@ tmpl.stylesheetTokens = {
     );
   });
 
-  it("should convert div with text", function () {
+  it("should compile div with text", function () {
     const source = `
 import _implicitStylesheets from "./test.css";
 import { registerTemplate } from "lwc";
@@ -76,14 +76,15 @@ tmpl.stylesheetTokens = {
 };
         `.trim();
 
-    expect(convert('something.html', source)).toBe(
+    expect(compile("something.html", source)).toBe(
       `
 import _implicitStylesheets from "./test.css";
 import React from "react";
 
 function tmpl($cmp) {
   return React.createElement("div", {
-    [tmpl.stylesheetTokens.shadowAttribute]: "true"
+    [tmpl.stylesheetTokens.shadowAttribute]: "true",
+    ref: $cmp.template
   }, "hi");
 }
 
@@ -102,7 +103,7 @@ tmpl.stylesheetTokens = {
     );
   });
 
-  it("should convert multiple nested divs with text", function () {
+  it("should compile multiple nested divs with text", function () {
     const source = `
 import _implicitStylesheets from "./test.css";
 import { registerTemplate } from "lwc";
@@ -134,14 +135,15 @@ tmpl.stylesheetTokens = {
 };
         `.trim();
 
-    expect(convert('something.html', source)).toBe(
+    expect(compile("something.html", source)).toBe(
       `
 import _implicitStylesheets from "./test.css";
 import React from "react";
 
 function tmpl($cmp) {
   return React.createElement("div", {
-    [tmpl.stylesheetTokens.shadowAttribute]: "true"
+    [tmpl.stylesheetTokens.shadowAttribute]: "true",
+    ref: $cmp.template
   }, [React.createElement("div", {
     [tmpl.stylesheetTokens.shadowAttribute]: "true"
   }, "hi 1"), React.createElement("div", {
@@ -164,7 +166,7 @@ tmpl.stylesheetTokens = {
     );
   });
 
-  it("should convert class attributes", function () {
+  it("should compile class attributes", function () {
     const source = `
 import _implicitStylesheets from "./test.css";
 
@@ -195,7 +197,7 @@ tmpl.stylesheetTokens = {
 };
         `.trim();
 
-    expect(convert('something.html', source)).toBe(
+    expect(compile("something.html", source)).toBe(
       `
 import _implicitStylesheets from "./test.css";
 import React from "react";
@@ -203,6 +205,7 @@ import React from "react";
 function tmpl($cmp) {
   return React.createElement("div", {
     [tmpl.stylesheetTokens.shadowAttribute]: "true",
+    ref: $cmp.template,
     className: "hello"
   }, "text");
 }
@@ -222,7 +225,7 @@ tmpl.stylesheetTokens = {
     );
   });
 
-  it("should convert style attributes", function () {
+  it("should compile style attributes", function () {
     const source = `
 import _implicitStylesheets from "./test.css";
 import { registerTemplate } from "lwc";
@@ -252,7 +255,7 @@ tmpl.stylesheetTokens = {
 };
         `.trim();
 
-    expect(convert("something.html", source)).toBe(
+    expect(compile("something.html", source)).toBe(
       `
 import _implicitStylesheets from "./test.css";
 import React from "react";
@@ -260,6 +263,7 @@ import React from "react";
 function tmpl($cmp) {
   return React.createElement("div", {
     [tmpl.stylesheetTokens.shadowAttribute]: "true",
+    ref: $cmp.template,
 
     style: {
       "color": "red"
@@ -282,7 +286,7 @@ tmpl.stylesheetTokens = {
     );
   });
 
-  it("should convert generic attributes", function () {
+  it("should compile generic attributes", function () {
     const source = `
 import _implicitStylesheets from "./test.css";
 
@@ -313,7 +317,7 @@ tmpl.stylesheetTokens = {
 };
         `.trim();
 
-    expect(convert('something.html', source)).toBe(
+    expect(compile("something.html", source)).toBe(
       `
 import _implicitStylesheets from "./test.css";
 import React from "react";
@@ -321,6 +325,7 @@ import React from "react";
 function tmpl($cmp) {
   return React.createElement("div", {
     [tmpl.stylesheetTokens.shadowAttribute]: "true",
+    ref: $cmp.template,
     "title": "wow"
   }, "text");
 }
@@ -340,7 +345,7 @@ tmpl.stylesheetTokens = {
     );
   });
 
-  it("should convert complex heirarchy with attributes", function () {
+  it("should compile complex heirarchy with attributes", function () {
     const code = `
 import _implicitStylesheets from "./test.css";
 
@@ -390,13 +395,15 @@ tmpl.stylesheetTokens = {
 };
         `.trim();
 
-        expect(convert('something.html', code)).toBe(`
+    expect(compile("something.html", code)).toBe(
+      `
 import _implicitStylesheets from "./test.css";
 import React from "react";
 
 function tmpl($cmp) {
   return React.createElement("figure", {
     [tmpl.stylesheetTokens.shadowAttribute]: "true",
+    ref: $cmp.template,
     "role": "group"
   }, [React.createElement("img", {
     [tmpl.stylesheetTokens.shadowAttribute]: "true",
@@ -426,10 +433,11 @@ tmpl.stylesheetTokens = {
   hostAttribute: "my-test_test-host",
   shadowAttribute: "my-test_test"
 };
-        `.trim())
+        `.trim()
+    );
   });
 
-  it('should convert the lwc class into a react class that renders the template', function() {
+  it("should compile the lwc class into a react class that renders the template", function () {
     const source = `
 import _tmpl from "./test.html";
 import { registerComponent as _registerComponent } from "lwc";
@@ -440,9 +448,10 @@ class Test extends LightningElement {}
 export default _registerComponent(Test, {
   tmpl: _tmpl
 });
-    `
+    `;
 
-    expect(convert('something.js', source)).toBe(`
+    expect(compile("something.js", source)).toBe(
+      `
 import ObservableMembrane from "observable-membrane";
 import _tmpl from "./test.html";
 import React from "react";
@@ -482,10 +491,11 @@ class Test extends React.Component {
 }
 
 export default Test;
-    `.trim());
+    `.trim()
+    );
   });
 
-  it('should generate the proper template with api bound props', function() {
+  it("should generate the proper template with api bound props", function () {
     const source = `
 import _implicitStylesheets from "./product.css";
 
@@ -512,15 +522,17 @@ tmpl.stylesheetTokens = {
   hostAttribute: "my-product_product-host",
   shadowAttribute: "my-product_product"
 };
-`
-expect(convert('something.html', source)).toBe(`
+`;
+    expect(compile("something.html", source)).toBe(
+      `
 import _implicitStylesheets from "./product.css";
 import React from "react";
 
 function tmpl($cmp) {
   return React.createElement("h1", {
-    [tmpl.stylesheetTokens.shadowAttribute]: "true"
-  }, ["Product: ", $cmp.productId]);
+    [tmpl.stylesheetTokens.shadowAttribute]: "true",
+    ref: $cmp.template
+  }, ["Product: ", $cmp.params.productId]);
 }
 
 export default tmpl;
@@ -534,11 +546,11 @@ tmpl.stylesheetTokens = {
   hostAttribute: "my-product_product-host",
   shadowAttribute: "my-product_product"
 };
-`.trim())
+`.trim()
+    );
+  });
 
-  })
-
-  it('should convert conditional blocks and expressions', function() {
+  it("should compile conditional blocks and expressions", function () {
     const source = `
 import { registerDecorators as _registerDecorators } from "lwc";
 import _tmpl from "./app.html";
@@ -574,7 +586,8 @@ export default _registerComponent(ProductImage, {
 });
     `;
 
-    expect(convert('some.js', source)).toBe(`
+    expect(compile("some.js", source)).toBe(
+      `
 import ObservableMembrane from "observable-membrane";
 import React from "react";
 import _tmpl from "./app.html";
@@ -591,6 +604,7 @@ class ProductImage extends React.Component {
     });
 
     this.__s = membrane.getProxy({});
+    this.template = React.createRef();
     this.__s.someValue = 1;
   }
 
@@ -640,11 +654,11 @@ class ProductImage extends React.Component {
 }
 
 export default ProductImage;
-    `.trim());
+    `.trim()
+    );
+  });
 
-  })
-
-  it('should convert for loops', function() {
+  it("should compile for loops", function () {
     const source = `
 import { registerDecorators as _registerDecorators } from "lwc";
 import _tmpl from "./app.html";
@@ -674,7 +688,8 @@ export default _registerComponent(ProductImage, {
 });
     `;
 
-    expect(convert('some.js', source)).toBe(`
+    expect(compile("some.js", source)).toBe(
+      `
 import ObservableMembrane from "observable-membrane";
 import React from "react";
 import _tmpl from "./app.html";
@@ -691,6 +706,7 @@ class ProductImage extends React.Component {
     });
 
     this.__s = membrane.getProxy({});
+    this.template = React.createRef();
     this.__s.someValue = 1;
   }
 
@@ -734,11 +750,11 @@ class ProductImage extends React.Component {
 }
 
 export default ProductImage;
-    `.trim());
+    `.trim()
+    );
+  });
 
-  })
-
-  it('should convert forof loops', function() {
+  it("should compile forof loops", function () {
     const source = `
 import { registerDecorators as _registerDecorators } from "lwc";
 import _tmpl from "./app.html";
@@ -768,7 +784,8 @@ export default _registerComponent(ProductImage, {
 });
     `;
 
-    expect(convert('some.js', source)).toBe(`
+    expect(compile("some.js", source)).toBe(
+      `
 import ObservableMembrane from "observable-membrane";
 import React from "react";
 import _tmpl from "./app.html";
@@ -785,6 +802,7 @@ class ProductImage extends React.Component {
     });
 
     this.__s = membrane.getProxy({});
+    this.template = React.createRef();
     this.__s.arr = [1, 2];
   }
 
@@ -828,7 +846,203 @@ class ProductImage extends React.Component {
 }
 
 export default ProductImage;
-    `.trim());
+    `.trim()
+    );
+  });
 
-  })
+  it("should compile for:each directives", function () {
+    const source = `
+import _implicitStylesheets from "./app.css";
+
+import { registerTemplate } from "lwc";
+
+function tmpl($api, $cmp, $slotset, $ctx) {
+  const {
+    d: api_dynamic,
+    k: api_key,
+    h: api_element,
+    i: api_iterator
+  } = $api;
+  return [api_element("ul", {
+    key: 1
+  }, api_iterator($cmp.list, function (item) {
+    return api_element("li", {
+      key: api_key(0, item.id)
+    }, [api_dynamic(item.value)]);
+  }))];
+}
+
+export default registerTemplate(tmpl);
+tmpl.stylesheets = [];
+
+if (_implicitStylesheets) {
+  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets)
+}
+tmpl.stylesheetTokens = {
+  hostAttribute: "my-app_app-host",
+  shadowAttribute: "my-app_app"
+};
+        `.trim();
+
+    expect(compile("something.html", source)).toBe(
+      `
+import _implicitStylesheets from "./app.css";
+import React from "react";
+
+function tmpl($cmp) {
+  return React.createElement("ul", {
+    [tmpl.stylesheetTokens.shadowAttribute]: "true",
+    ref: $cmp.template
+  }, $cmp.list.map(item => React.createElement("li", {
+    [tmpl.stylesheetTokens.shadowAttribute]: "true"
+  }, item.value)));
+}
+
+export default tmpl;
+tmpl.stylesheets = [];
+
+if (_implicitStylesheets) {
+  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets);
+}
+
+tmpl.stylesheetTokens = {
+  hostAttribute: "my-app_app-host",
+  shadowAttribute: "my-app_app"
+};
+        `.trim()
+    );
+  });
+
+  it("should compile for:each directives with dynamic attributes", function () {
+    const source = `
+import _implicitStylesheets from "./app.css";
+
+import { registerTemplate } from "lwc";
+
+function tmpl($api, $cmp, $slotset, $ctx) {
+  const {
+    d: api_dynamic,
+    h: api_element,
+    k: api_key,
+    i: api_iterator
+  } = $api;
+  return [api_element("ul", {
+    key: 2
+  }, api_iterator($cmp.list, function (item) {
+    return api_element("li", {
+      className: item.value,
+      attrs: {
+        "title": item.value
+      },
+      key: api_key(1, item.id)
+    }, [api_element("span", {
+      className: $cmp.classProp,
+      key: 0
+    }, [api_dynamic(item.value)])]);
+  }))];
+}
+
+export default registerTemplate(tmpl);
+tmpl.stylesheets = [];
+
+if (_implicitStylesheets) {
+  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets)
+}
+tmpl.stylesheetTokens = {
+  hostAttribute: "my-app_app-host",
+  shadowAttribute: "my-app_app"
+};
+        `.trim();
+
+    expect(compile("something.html", source)).toBe(
+      `
+import _implicitStylesheets from "./app.css";
+import React from "react";
+
+function tmpl($cmp) {
+  return React.createElement("ul", {
+    [tmpl.stylesheetTokens.shadowAttribute]: "true",
+    ref: $cmp.template
+  }, $cmp.list.map(item => React.createElement("li", {
+    [tmpl.stylesheetTokens.shadowAttribute]: "true",
+    "title": item.value,
+    className: item.value
+  }, React.createElement("span", {
+    [tmpl.stylesheetTokens.shadowAttribute]: "true",
+    className: $cmp.classProp
+  }, item.value))));
+}
+
+export default tmpl;
+tmpl.stylesheets = [];
+
+if (_implicitStylesheets) {
+  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets);
+}
+
+tmpl.stylesheetTokens = {
+  hostAttribute: "my-app_app-host",
+  shadowAttribute: "my-app_app"
+};
+        `.trim()
+    );
+  });
+
+  it("should compile if:true directives", function () {
+    const source = `
+import _implicitStylesheets from "./app.css";
+
+import { registerTemplate } from "lwc";
+
+function tmpl($api, $cmp, $slotset, $ctx) {
+  const {
+    t: api_text,
+    h: api_element
+  } = $api;
+  return [$cmp.someProp ? api_element("div", {
+    key: 0
+  }, [api_text("a")]) : null, !$cmp.someProp ? api_element("div", {
+    key: 1
+  }, [api_text("b")]) : null];
+}
+
+export default registerTemplate(tmpl);
+tmpl.stylesheets = [];
+
+if (_implicitStylesheets) {
+  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets)
+}
+tmpl.stylesheetTokens = {
+  hostAttribute: "my-app_app-host",
+  shadowAttribute: "my-app_app"
+};
+        `.trim();
+
+    expect(compile("something.html", source)).toBe(
+      `
+import _implicitStylesheets from "./app.css";
+import React from "react";
+
+function tmpl($cmp) {
+  return [$cmp.someProp ? React.createElement("div", {
+    [tmpl.stylesheetTokens.shadowAttribute]: "true"
+  }, "a") : null, !$cmp.someProp ? React.createElement("div", {
+    [tmpl.stylesheetTokens.shadowAttribute]: "true"
+  }, "b") : null];
+}
+
+export default tmpl;
+tmpl.stylesheets = [];
+
+if (_implicitStylesheets) {
+  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets);
+}
+
+tmpl.stylesheetTokens = {
+  hostAttribute: "my-app_app-host",
+  shadowAttribute: "my-app_app"
+};
+        `.trim()
+    );
+  });
 });
