@@ -15,8 +15,8 @@ export default function rollupLWC2ReactCompiler(pluginOptions = {}) {
   return {
     name: "rollup-lwc2react-compiler",
     async transform(src, id) {
-      if (debug) {
-        console.log("lwc2react -> ", id, filter(id));
+      if (debug && filter(id)) {
+        console.log("lwc2react -> ", id);
       }
       if (!filter(id)) {
         return;
@@ -26,6 +26,11 @@ export default function rollupLWC2ReactCompiler(pluginOptions = {}) {
       try {
         code = compile(id, src);
         if (code) {
+            if (debug && id.includes(debug)) {
+                console.log(src);
+                console.log('===========')
+                console.log(code);
+            }
           return {
             code,
             map: null,

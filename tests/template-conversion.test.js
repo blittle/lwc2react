@@ -1045,4 +1045,63 @@ tmpl.stylesheetTokens = {
         `.trim()
     );
   });
+  it("should convert ID attributes", function () {
+    const source = `
+import _implicitStylesheets from "./app.css";
+
+import { registerTemplate } from "lwc";
+
+function tmpl($api, $cmp, $slotset, $ctx) {
+  const {
+    t: api_text,
+    gid: api_scoped_id,
+    h: api_element
+  } = $api;
+  return [api_element("div", {
+    attrs: {
+      "id": api_scoped_id("1")
+    },
+    key: 0
+  }, [api_text("content")])];
+}
+
+export default registerTemplate(tmpl);
+tmpl.stylesheets = [];
+
+if (_implicitStylesheets) {
+  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets)
+}
+tmpl.stylesheetTokens = {
+  hostAttribute: "my-app_app-host",
+  shadowAttribute: "my-app_app"
+};
+        `.trim();
+
+    expect(compile("something.html", source)).toBe(
+      `
+import _implicitStylesheets from "./app.css";
+import React from "react";
+
+function tmpl($cmp) {
+  return React.createElement("div", {
+    [tmpl.stylesheetTokens.shadowAttribute]: "true",
+    ref: $cmp.template,
+    "id": "1"
+  }, "content");
+}
+
+export default tmpl;
+tmpl.stylesheets = [];
+
+if (_implicitStylesheets) {
+  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets);
+}
+
+tmpl.stylesheetTokens = {
+  hostAttribute: "my-app_app-host",
+  shadowAttribute: "my-app_app"
+};
+        `.trim()
+    );
+  })
 });

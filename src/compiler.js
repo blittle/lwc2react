@@ -398,7 +398,7 @@ function buildChildren(element, templateIdentifier, options) {
       mapIteration.arguments[0].body = returnValues;
       return mapIteration;
     } else {
-      throw new Error('Cannot process: ' + callee);
+      throw new Error("Cannot process: " + callee);
     }
   }
 
@@ -407,20 +407,27 @@ function buildChildren(element, templateIdentifier, options) {
 
 function recurseElementTree(astArray, templateIdentifier, options) {
   const process = (element) => {
-
     if (n.Literal.check(element)) return element;
 
     if (n.ConditionalExpression.check(element)) {
-      element.consequent = recurseElementTree([element.consequent], templateIdentifier, {
-        slots: false,
-        topOfTree: false,
-        ref: options.ref
-      });
-      element.alternate = recurseElementTree([element.alternate], templateIdentifier, {
-        slots: false,
-        topOfTree: false,
-        ref: options.ref
-      });
+      element.consequent = recurseElementTree(
+        [element.consequent],
+        templateIdentifier,
+        {
+          slots: false,
+          topOfTree: false,
+          ref: options.ref,
+        }
+      );
+      element.alternate = recurseElementTree(
+        [element.alternate],
+        templateIdentifier,
+        {
+          slots: false,
+          topOfTree: false,
+          ref: options.ref,
+        }
+      );
 
       return element;
     }
@@ -590,12 +597,11 @@ function buildProps(element, component, templateIdentifier, topOfTree) {
 
 function processProp(prop) {
   if (
-    n.MemberExpression.check(prop.value) &&
-    prop.value.object.name === "$cmp"
+    n.CallExpression.check(prop.value) &&
+    prop.value.callee.name === "api_scoped_id"
   ) {
-    prop.value.object = b.identifier("$cmp");
+    prop.value = prop.value.arguments[0];
   }
-
   return prop;
 }
 
