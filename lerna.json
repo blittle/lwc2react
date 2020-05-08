@@ -1,0 +1,9 @@
+{
+  "version": "0.1.4",
+  "npmClient": "npm",
+  "exact": true,
+  "stream": true,
+  "packages": [
+    "packages/*"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "name": "lwc2react",
+  "version": "0.1.4",
+  "description": "",
+  "main": "lib/index.js",
+  "homepage": "https://github.com/blittle/lwc2react",
+  "scripts": {
+    "test": "jest --verbose --coverage",
+    "prepublish": "npm run build",
+    "build": "babel src -d lib"
+  },
+  "author": "Bret Little",
+  "contributors": [
+    "Steffen Eckardt"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@rollup/pluginutils": "^3.0.10",
+    "recast": "^0.19.0"
+  },
+  "files": [
+    "lib"
+  ]
+}
