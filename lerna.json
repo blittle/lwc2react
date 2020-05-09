@@ -3,7 +3,14 @@
   "npmClient": "npm",
   "exact": true,
   "stream": true,
-  "packages": [
-    "packages/*"
-  ]
+  "packages": ["packages/*"],
+  "command": {
+    "version": {
+      "allowBranch": "master",
+      "exact": true,
+      "conventionalCommits": true,
+      "ignoreChanges": ["**/*.md", "**/tests/**"],
+      "message": "chore(version): bump release version to %v"
+    }
+  }
 }

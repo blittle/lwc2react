@@ -1,7 +1,7 @@
-import { compile } from "../src/compiler";
+import { compile } from '../src/compiler';
 
-describe("Events", function () {
-  it("bound events in template", function () {
+describe('Events', function () {
+  it('bound events in template', function () {
     const source = `
 import _implicitStylesheets from "./app.css";
 
@@ -41,7 +41,7 @@ tmpl.stylesheetTokens = {
 };
     `;
 
-    expect(compile("something.html", source)).toBe(
+    expect(compile('something.html', source)).toBe(
       `
 import _implicitStylesheets from "./app.css";
 import React from "react";
@@ -72,5 +72,4 @@ tmpl.stylesheetTokens = {
   `.trim()
     );
   });
-
 });

@@ -1,7 +1,7 @@
-import { compile } from "../src/compiler";
+import { compile } from '../src/compiler';
 
-describe("Class bindings", function () {
-  it("should add observable membrane for basic bindings", function () {
+describe('Class bindings', function () {
+  it('should add observable membrane for basic bindings', function () {
     const source = `
 import { registerDecorators as _registerDecorators } from "lwc";
 import _tmpl from "./test.html";
@@ -29,7 +29,7 @@ export default _registerComponent(Test, {
 });
     `;
 
-    expect(compile("something.js", source)).toBe(
+    expect(compile('something.js', source)).toBe(
       `
 import ObservableMembrane from "observable-membrane";
 import React from "react";
@@ -93,7 +93,7 @@ export default Test;
     );
   });
 
-  it("should add observable membrane for assignments", function () {
+  it('should add observable membrane for assignments', function () {
     const source = `
 import { registerDecorators as _registerDecorators } from "lwc";
 import _tmpl from "./test.html";
@@ -121,7 +121,7 @@ export default _registerComponent(Test, {
 });
     `;
 
-    expect(compile("something.js", source)).toBe(
+    expect(compile('something.js', source)).toBe(
       `
 import ObservableMembrane from "observable-membrane";
 import React from "react";
@@ -185,7 +185,7 @@ export default Test;
     );
   });
 
-  it("should compile method called from constructor", function () {
+  it('should compile method called from constructor', function () {
     const code = `
 import { registerDecorators as _registerDecorators } from "lwc";
 import _tmpl from "./app.html";
@@ -281,7 +281,7 @@ export default App;
     );
   });
 
-  it("should compile @api props", function () {
+  it('should compile @api props', function () {
     const code = `
 import { registerDecorators as _registerDecorators } from "lwc";
 import _tmpl from "./app.html";
@@ -368,7 +368,7 @@ export default App;
     );
   });
 
-  it("should compile @api props with default values", function () {
+  it('should compile @api props with default values', function () {
     const code = `
 import { registerDecorators as _registerDecorators } from "lwc";
 import _tmpl from "./app.html";
@@ -455,7 +455,7 @@ export default App;
     );
   });
 
-  it("should compile @api with a getter and styles", function () {
+  it('should compile @api with a getter and styles', function () {
     const code = `
 import { registerDecorators as _registerDecorators } from "lwc";
 import _tmpl from "./app.html";

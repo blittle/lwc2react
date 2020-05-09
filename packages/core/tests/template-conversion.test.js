@@ -1,7 +1,7 @@
-import { compile } from "../src/compiler";
+import { compile } from '../src/compiler';
 
-describe("templates", function () {
-  it("should compile an empty component", function () {
+describe('templates', function () {
+  it('should compile an empty component', function () {
     const source = `
 import _implicitStylesheets from "./test.css";
 
@@ -24,7 +24,7 @@ tmpl.stylesheetTokens = {
 };
         `.trim();
 
-    expect(compile("something.html", source)).toBe(
+    expect(compile('something.html', source)).toBe(
       `
 import _implicitStylesheets from "./test.css";
 import React from "react";
@@ -48,7 +48,7 @@ tmpl.stylesheetTokens = {
     );
   });
 
-  it("should compile div with text", function () {
+  it('should compile div with text', function () {
     const source = `
 import _implicitStylesheets from "./test.css";
 import { registerTemplate } from "lwc";
@@ -76,7 +76,7 @@ tmpl.stylesheetTokens = {
 };
         `.trim();
 
-    expect(compile("something.html", source)).toBe(
+    expect(compile('something.html', source)).toBe(
       `
 import _implicitStylesheets from "./test.css";
 import React from "react";
@@ -103,7 +103,7 @@ tmpl.stylesheetTokens = {
     );
   });
 
-  it("should compile multiple nested divs with text", function () {
+  it('should compile multiple nested divs with text', function () {
     const source = `
 import _implicitStylesheets from "./test.css";
 import { registerTemplate } from "lwc";
@@ -135,7 +135,7 @@ tmpl.stylesheetTokens = {
 };
         `.trim();
 
-    expect(compile("something.html", source)).toBe(
+    expect(compile('something.html', source)).toBe(
       `
 import _implicitStylesheets from "./test.css";
 import React from "react";
@@ -166,7 +166,7 @@ tmpl.stylesheetTokens = {
     );
   });
 
-  it("should compile class attributes", function () {
+  it('should compile class attributes', function () {
     const source = `
 import _implicitStylesheets from "./test.css";
 
@@ -197,7 +197,7 @@ tmpl.stylesheetTokens = {
 };
         `.trim();
 
-    expect(compile("something.html", source)).toBe(
+    expect(compile('something.html', source)).toBe(
       `
 import _implicitStylesheets from "./test.css";
 import React from "react";
@@ -225,7 +225,7 @@ tmpl.stylesheetTokens = {
     );
   });
 
-  it("should compile style attributes", function () {
+  it('should compile style attributes', function () {
     const source = `
 import _implicitStylesheets from "./test.css";
 import { registerTemplate } from "lwc";
@@ -255,7 +255,7 @@ tmpl.stylesheetTokens = {
 };
         `.trim();
 
-    expect(compile("something.html", source)).toBe(
+    expect(compile('something.html', source)).toBe(
       `
 import _implicitStylesheets from "./test.css";
 import React from "react";
@@ -286,7 +286,7 @@ tmpl.stylesheetTokens = {
     );
   });
 
-  it("should compile generic attributes", function () {
+  it('should compile generic attributes', function () {
     const source = `
 import _implicitStylesheets from "./test.css";
 
@@ -317,7 +317,7 @@ tmpl.stylesheetTokens = {
 };
         `.trim();
 
-    expect(compile("something.html", source)).toBe(
+    expect(compile('something.html', source)).toBe(
       `
 import _implicitStylesheets from "./test.css";
 import React from "react";
@@ -345,7 +345,7 @@ tmpl.stylesheetTokens = {
     );
   });
 
-  it("should compile complex heirarchy with attributes", function () {
+  it('should compile complex heirarchy with attributes', function () {
     const code = `
 import _implicitStylesheets from "./test.css";
 
@@ -395,7 +395,7 @@ tmpl.stylesheetTokens = {
 };
         `.trim();
 
-    expect(compile("something.html", code)).toBe(
+    expect(compile('something.html', code)).toBe(
       `
 import _implicitStylesheets from "./test.css";
 import React from "react";
@@ -437,7 +437,7 @@ tmpl.stylesheetTokens = {
     );
   });
 
-  it("should compile the lwc class into a react class that renders the template", function () {
+  it('should compile the lwc class into a react class that renders the template', function () {
     const source = `
 import _tmpl from "./test.html";
 import { registerComponent as _registerComponent } from "lwc";
@@ -450,7 +450,7 @@ export default _registerComponent(Test, {
 });
     `;
 
-    expect(compile("something.js", source)).toBe(
+    expect(compile('something.js', source)).toBe(
       `
 import ObservableMembrane from "observable-membrane";
 import _tmpl from "./test.html";
@@ -495,7 +495,7 @@ export default Test;
     );
   });
 
-  it("should generate the proper template with api bound props", function () {
+  it('should generate the proper template with api bound props', function () {
     const source = `
 import _implicitStylesheets from "./product.css";
 
@@ -523,7 +523,7 @@ tmpl.stylesheetTokens = {
   shadowAttribute: "my-product_product"
 };
 `;
-    expect(compile("something.html", source)).toBe(
+    expect(compile('something.html', source)).toBe(
       `
 import _implicitStylesheets from "./product.css";
 import React from "react";
@@ -550,7 +550,7 @@ tmpl.stylesheetTokens = {
     );
   });
 
-  it("should compile conditional blocks and expressions", function () {
+  it('should compile conditional blocks and expressions', function () {
     const source = `
 import { registerDecorators as _registerDecorators } from "lwc";
 import _tmpl from "./app.html";
@@ -586,7 +586,7 @@ export default _registerComponent(ProductImage, {
 });
     `;
 
-    expect(compile("some.js", source)).toBe(
+    expect(compile('some.js', source)).toBe(
       `
 import ObservableMembrane from "observable-membrane";
 import React from "react";
@@ -658,7 +658,7 @@ export default ProductImage;
     );
   });
 
-  it("should compile for loops", function () {
+  it('should compile for loops', function () {
     const source = `
 import { registerDecorators as _registerDecorators } from "lwc";
 import _tmpl from "./app.html";
@@ -688,7 +688,7 @@ export default _registerComponent(ProductImage, {
 });
     `;
 
-    expect(compile("some.js", source)).toBe(
+    expect(compile('some.js', source)).toBe(
       `
 import ObservableMembrane from "observable-membrane";
 import React from "react";
@@ -754,7 +754,7 @@ export default ProductImage;
     );
   });
 
-  it("should compile forof loops", function () {
+  it('should compile forof loops', function () {
     const source = `
 import { registerDecorators as _registerDecorators } from "lwc";
 import _tmpl from "./app.html";
@@ -784,7 +784,7 @@ export default _registerComponent(ProductImage, {
 });
     `;
 
-    expect(compile("some.js", source)).toBe(
+    expect(compile('some.js', source)).toBe(
       `
 import ObservableMembrane from "observable-membrane";
 import React from "react";
@@ -850,7 +850,7 @@ export default ProductImage;
     );
   });
 
-  it("should compile for:each directives", function () {
+  it('should compile for:each directives', function () {
     const source = `
 import _implicitStylesheets from "./app.css";
 
@@ -884,7 +884,7 @@ tmpl.stylesheetTokens = {
 };
         `.trim();
 
-    expect(compile("something.html", source)).toBe(
+    expect(compile('something.html', source)).toBe(
       `
 import _implicitStylesheets from "./app.css";
 import React from "react";
@@ -913,7 +913,7 @@ tmpl.stylesheetTokens = {
     );
   });
 
-  it("should compile for:each directives with dynamic attributes", function () {
+  it('should compile for:each directives with dynamic attributes', function () {
     const source = `
 import _implicitStylesheets from "./app.css";
 
@@ -954,7 +954,7 @@ tmpl.stylesheetTokens = {
 };
         `.trim();
 
-    expect(compile("something.html", source)).toBe(
+    expect(compile('something.html', source)).toBe(
       `
 import _implicitStylesheets from "./app.css";
 import React from "react";
@@ -988,7 +988,7 @@ tmpl.stylesheetTokens = {
     );
   });
 
-  it("should compile if:true directives", function () {
+  it('should compile if:true directives', function () {
     const source = `
 import _implicitStylesheets from "./app.css";
 
@@ -1018,7 +1018,7 @@ tmpl.stylesheetTokens = {
 };
         `.trim();
 
-    expect(compile("something.html", source)).toBe(
+    expect(compile('something.html', source)).toBe(
       `
 import _implicitStylesheets from "./app.css";
 import React from "react";
@@ -1045,7 +1045,7 @@ tmpl.stylesheetTokens = {
         `.trim()
     );
   });
-  it("should convert ID attributes", function () {
+  it('should convert ID attributes', function () {
     const source = `
 import _implicitStylesheets from "./app.css";
 
@@ -1077,7 +1077,7 @@ tmpl.stylesheetTokens = {
 };
         `.trim();
 
-    expect(compile("something.html", source)).toBe(
+    expect(compile('something.html', source)).toBe(
       `
 import _implicitStylesheets from "./app.css";
 import React from "react";
@@ -1103,5 +1103,5 @@ tmpl.stylesheetTokens = {
 };
         `.trim()
     );
-  })
+  });
 });

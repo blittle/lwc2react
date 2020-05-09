@@ -1,7 +1,7 @@
-import { compile } from "../src/compiler";
+import { compile } from '../src/compiler';
 
-describe("Lifecycles", function () {
-  it("connectedCallback", function () {
+describe('Lifecycles', function () {
+  it('connectedCallback', function () {
     const source = `
 import { registerDecorators as _registerDecorators } from "lwc";
 import _tmpl from "./test.html";
@@ -30,7 +30,7 @@ export default _registerComponent(Test, {
 });
     `;
 
-    expect(compile("something.js", source)).toBe(
+    expect(compile('something.js', source)).toBe(
       `
 import ObservableMembrane from "observable-membrane";
 import React from "react";
@@ -94,7 +94,7 @@ export default Test;
     );
   });
 
-  it("disconnectedCallback", function () {
+  it('disconnectedCallback', function () {
     const source = `
 import { registerDecorators as _registerDecorators } from "lwc";
 import _tmpl from "./test.html";
@@ -123,7 +123,7 @@ export default _registerComponent(Test, {
 });
     `;
 
-    expect(compile("something.js", source)).toBe(
+    expect(compile('something.js', source)).toBe(
       `
 import ObservableMembrane from "observable-membrane";
 import React from "react";
@@ -187,7 +187,7 @@ export default Test;
     );
   });
 
-  it("renderedCallback", function () {
+  it('renderedCallback', function () {
     const source = `
 import { registerDecorators as _registerDecorators } from "lwc";
 import _tmpl from "./test.html";
@@ -216,7 +216,7 @@ export default _registerComponent(Test, {
 });
     `;
 
-    expect(compile("something.js", source)).toBe(
+    expect(compile('something.js', source)).toBe(
       `
 import ObservableMembrane from "observable-membrane";
 import React from "react";
@@ -282,7 +282,7 @@ export default Test;
     );
   });
 
-  it("errorCallback", function () {
+  it('errorCallback', function () {
     const source = `
 import { registerDecorators as _registerDecorators } from "lwc";
 import _tmpl from "./test.html";
@@ -311,7 +311,7 @@ export default _registerComponent(Test, {
 });
     `;
 
-    expect(compile("something.js", source)).toBe(
+    expect(compile('something.js', source)).toBe(
       `
 import ObservableMembrane from "observable-membrane";
 import React from "react";
