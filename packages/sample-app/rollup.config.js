@@ -4,6 +4,7 @@ import replace from 'rollup-plugin-replace';
 import commonjs from 'rollup-plugin-commonjs';
 import path from 'path';
 import lwc2react from 'lwc2react';
+import visualizer from 'rollup-plugin-visualizer';
 
 const outputDir = path.resolve(__dirname, `./src/dist`);
 const input = path.resolve(__dirname, './src/index.js');
@@ -31,6 +32,9 @@ export default {
     lwc2react({
       debug: true,
       include: '**/modules/my/**',
+    }),
+    visualizer({
+      filename: 'src/dist/stats.html',
     }),
   ],
 };

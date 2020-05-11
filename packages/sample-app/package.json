@@ -22,7 +22,8 @@
     "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-compat": "^0.22.0",
     "rollup-plugin-node-resolve": "^5.2.0",
-    "rollup-plugin-replace": "^2.2.0"
+    "rollup-plugin-replace": "^2.2.0",
+    "rollup-plugin-visualizer": "^4.0.4"
   },
   "author": "Bret Little",
   "license": "ISC",
