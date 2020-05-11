@@ -1,7 +1,7 @@
-import { compile } from "../src/compiler";
+import { compile } from '../src/compiler';
 
-describe("Component composition", function () {
-  it("should render nested component", function () {
+describe('Component composition', function () {
+  it('should render nested component', function () {
     const code = `
 import _implicitStylesheets from "./app.css";
 
@@ -57,7 +57,7 @@ tmpl.stylesheetTokens = {
     );
   });
 
-  it("should render nested components with slots and properties", function () {
+  it('should render nested components with slots and properties', function () {
     const code = `
 import _implicitStylesheets from "./app.css";
 
@@ -97,7 +97,7 @@ tmpl.stylesheetTokens = {
 };
         `.trim();
 
-    expect(compile("temp.html", code)).toBe(
+    expect(compile('temp.html', code)).toBe(
       `
 import _implicitStylesheets from "./app.css";
 import _myComp from "my/comp";
@@ -135,7 +135,7 @@ tmpl.stylesheetTokens = {
     );
   });
 
-  it("should render slots as children", function () {
+  it('should render slots as children', function () {
     const code = `
 import _implicitStylesheets from "./comp.css";
 
@@ -196,7 +196,7 @@ tmpl.stylesheetTokens = {
     );
   });
 
-  it("should render slots as children with default markup", function () {
+  it('should render slots as children with default markup', function () {
     const code = `
 import _implicitStylesheets from "./comp.css";
 
@@ -271,7 +271,7 @@ tmpl.stylesheetTokens = {
     );
   });
 
-  it("should compile complex object @api properties", function () {
+  it('should compile complex object @api properties', function () {
     const code = `
 import _implicitStylesheets from "./comp.css";
 

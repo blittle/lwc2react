@@ -1,4 +1,4 @@
-import { parse, prettyPrint, types } from "recast";
+import { parse, prettyPrint, types } from 'recast';
 
 const b = types.builders;
 const n = types.namedTypes;
@@ -6,7 +6,7 @@ const n = types.namedTypes;
 function getTemplateAST(ast) {
   return ast.program.body.find(
     (element) =>
-      n.FunctionDeclaration.check(element) && element.params[0].name === "$api"
+      n.FunctionDeclaration.check(element) && element.params[0].name === '$api'
   );
 }
 
@@ -14,12 +14,12 @@ function getClassAST(ast) {
   return ast.program.body.find(
     (element) =>
       n.ClassDeclaration.check(element) &&
-      element.superClass.name === "LightningElement"
+      element.superClass.name === 'LightningElement'
   );
 }
 
 function convertClass(classAST, templateIdentifier) {
-  classAST.superClass = b.identifier("React.Component");
+  classAST.superClass = b.identifier('React.Component');
   convertMethods(classAST);
   buildRenderMethod(classAST, templateIdentifier);
   buildStyles(classAST, templateIdentifier);
@@ -29,24 +29,24 @@ function convertClass(classAST, templateIdentifier) {
 
 function convertLifeCycleMethods(classAST) {
   const componentDidMount = classAST.body.body.find(
-    (el) => n.MethodDefinition.check(el) && el.key.name === "componentDidMount"
+    (el) => n.MethodDefinition.check(el) && el.key.name === 'componentDidMount'
   );
   const componentWillUnmount = classAST.body.body.find(
     (el) =>
-      n.MethodDefinition.check(el) && el.key.name === "componentWillUnmount"
+      n.MethodDefinition.check(el) && el.key.name === 'componentWillUnmount'
   );
   const connectedCallbackIndex = classAST.body.body.findIndex(
-    (el) => n.MethodDefinition.check(el) && el.key.name === "connectedCallback"
+    (el) => n.MethodDefinition.check(el) && el.key.name === 'connectedCallback'
   );
   const disconnectedCallbackIndex = classAST.body.body.findIndex(
     (el) =>
-      n.MethodDefinition.check(el) && el.key.name === "disconnectedCallback"
+      n.MethodDefinition.check(el) && el.key.name === 'disconnectedCallback'
   );
   const renderedCallback = classAST.body.body.find(
-    (el) => n.MethodDefinition.check(el) && el.key.name === "renderedCallback"
+    (el) => n.MethodDefinition.check(el) && el.key.name === 'renderedCallback'
   );
   const errorCallback = classAST.body.body.find(
-    (el) => n.MethodDefinition.check(el) && el.key.name === "errorCallback"
+    (el) => n.MethodDefinition.check(el) && el.key.name === 'errorCallback'
   );
 
   if (connectedCallbackIndex !== -1) {
@@ -66,11 +66,11 @@ function convertLifeCycleMethods(classAST) {
   }
 
   if (renderedCallback) {
-    renderedCallback.key = b.identifier("componentDidUpdate");
+    renderedCallback.key = b.identifier('componentDidUpdate');
   }
 
   if (errorCallback) {
-    errorCallback.key = b.identifier("componentDidCatch");
+    errorCallback.key = b.identifier('componentDidCatch');
   }
 }
 
@@ -100,10 +100,10 @@ function buildStyles(classAST, templateIdentifier) {
 
   classAST.body.body.push(
     b.methodDefinition(
-      "method",
-      b.identifier("componentDidMount"),
+      'method',
+      b.identifier('componentDidMount'),
       b.functionExpression(
-        b.identifier("componentDidMount"),
+        b.identifier('componentDidMount'),
         [],
         b.blockStatement(didMountText.program.body)
       )
@@ -112,10 +112,10 @@ function buildStyles(classAST, templateIdentifier) {
 
   classAST.body.body.push(
     b.methodDefinition(
-      "method",
-      b.identifier("componentWillUnmount"),
+      'method',
+      b.identifier('componentWillUnmount'),
       b.functionExpression(
-        b.identifier("componentWillUnmount"),
+        b.identifier('componentWillUnmount'),
         [],
         b.blockStatement(willUnmountText.program.body)
       )
@@ -127,9 +127,9 @@ function convertMethods(classAST) {
   return classAST.body.body
     .filter(
       (property) =>
-        property?.kind === "method" ||
-        property?.kind === "get" ||
-        property?.kind === "set"
+        property?.kind === 'method' ||
+        property?.kind === 'get' ||
+        property?.kind === 'set'
     )
     .map((method) => {
       return b.methodDefinition(
@@ -157,7 +157,6 @@ function processBlock(block, options = { inConstructor: false }) {
 
 function processAssignmentExpression(assignment, options) {
   const expression = assignment.expression;
-  const { inConstructor } = options;
 
   expression.left = processExpression(expression.left, options);
   expression.right = processExpression(expression.right, options);
@@ -247,8 +246,6 @@ function processVariableDeclaration(element, options) {
 }
 
 function processExpression(expression, options) {
-  const { inTemplate } = options;
-
   if (n.MemberExpression.check(expression)) {
     if (n.ThisExpression.check(expression.object)) {
       return b.identifier(`this.__s.${expression.property.name}`);
@@ -315,7 +312,7 @@ function processIfStatement(element, options) {
 
 function convertConstructorBlock(classAST) {
   const constructorAST = classAST.body.body.find(
-    (prop) => prop.kind === "constructor"
+    (prop) => prop.kind === 'constructor'
   );
 
   if (constructorAST) {
@@ -346,10 +343,10 @@ function buildRenderMethod(classAST, templateIdentifier) {
   }`);
   classAST.body.body.push(
     b.methodDefinition(
-      "method",
-      b.identifier("render"),
+      'method',
+      b.identifier('render'),
       b.functionExpression(
-        b.identifier("render"),
+        b.identifier('render'),
         [],
         render.program.body[0].body
       )
@@ -380,9 +377,9 @@ function buildChildren(element, templateIdentifier, options) {
   if (n.CallExpression.check(child)) {
     const callee = child.callee.name;
 
-    if (callee === "api_iterator") {
+    if (callee === 'api_iterator') {
       const ref =
-        child.arguments[0].object.name + "." + child.arguments[0].property.name;
+        child.arguments[0].object.name + '.' + child.arguments[0].property.name;
       const param = child.arguments[1].params[0].name;
 
       const mapIteration = parse(`${ref}.map(${param} => null)`).program.body[0]
@@ -391,13 +388,17 @@ function buildChildren(element, templateIdentifier, options) {
       const returnValues = recurseElementTree(
         [child.arguments[1].body.body[0].argument],
         templateIdentifier,
-        { slots: false, topOfTree: false, ref: param }
+        {
+          slots: false,
+          topOfTree: false,
+          ref: param,
+        }
       );
 
       mapIteration.arguments[0].body = returnValues;
       return mapIteration;
     } else {
-      throw new Error("Cannot process: " + callee);
+      throw new Error('Cannot process: ' + callee);
     }
   }
 
@@ -432,8 +433,8 @@ function recurseElementTree(astArray, templateIdentifier, options) {
     }
 
     const callee = element?.callee?.name;
-    if (callee === "api_element") {
-      return b.callExpression(b.identifier("React.createElement"), [
+    if (callee === 'api_element') {
+      return b.callExpression(b.identifier('React.createElement'), [
         element.arguments[0],
         buildProps(element, false, templateIdentifier, options.topOfTree),
         buildChildren(element, templateIdentifier, {
@@ -442,12 +443,12 @@ function recurseElementTree(astArray, templateIdentifier, options) {
           ref: options.ref,
         }),
       ]);
-    } else if (callee === "api_text") {
+    } else if (callee === 'api_text') {
       return element.arguments[0]; // return the string literal
-    } else if (callee === "api_dynamic") {
+    } else if (callee === 'api_dynamic') {
       return element.arguments[0];
-    } else if (callee === "api_custom_element") {
-      return b.callExpression(b.identifier("React.createElement"), [
+    } else if (callee === 'api_custom_element') {
+      return b.callExpression(b.identifier('React.createElement'), [
         element.arguments[1],
         buildProps(element, true, templateIdentifier, options.topOfTree),
         buildChildren(element, templateIdentifier, {
@@ -456,10 +457,10 @@ function recurseElementTree(astArray, templateIdentifier, options) {
           ref: options.ref,
         }),
       ]);
-    } else if (callee === "api_slot") {
+    } else if (callee === 'api_slot') {
       return getChildrenFromSlot(element, templateIdentifier);
     } else {
-      throw new Error("cannot process: " + callee);
+      throw new Error('cannot process: ' + callee);
     }
   };
 
@@ -497,9 +498,9 @@ function getChildrenFromSlot(element, templateIdentifier) {
 function getSlotName(slot) {
   return (
     slot?.arguments[1]?.properties
-      ?.find((prop) => prop.key.name === "attrs")
-      ?.value?.properties?.find((prop) => prop.key.value === "slot")?.value
-      ?.value ?? ""
+      ?.find((prop) => prop.key.name === 'attrs')
+      ?.value?.properties?.find((prop) => prop.key.value === 'slot')?.value
+      ?.value ?? ''
   );
 }
 
@@ -507,22 +508,22 @@ function buildProps(element, component, templateIdentifier, topOfTree) {
   const index = component ? 2 : 1;
 
   const classMap = element.arguments[index].properties.find(
-    (prop) => prop.key.name === "classMap"
+    (prop) => prop.key.name === 'classMap'
   );
   const styleMap = element.arguments[index].properties.find(
-    (prop) => prop.key.name === "styleMap"
+    (prop) => prop.key.name === 'styleMap'
   );
   const attrMap = element.arguments[index].properties.find(
-    (prop) => prop.key.name === "attrs"
+    (prop) => prop.key.name === 'attrs'
   );
   const propMap = element.arguments[index].properties.find(
-    (prop) => prop.key.name === "props"
+    (prop) => prop.key.name === 'props'
   );
   const className = element.arguments[index].properties.find(
-    (prop) => prop.key.name === "className"
+    (prop) => prop.key.name === 'className'
   );
   const events = element.arguments[index].properties.find(
-    (prop) => prop.key.name === "on"
+    (prop) => prop.key.name === 'on'
   );
 
   const props = [];
@@ -530,25 +531,25 @@ function buildProps(element, component, templateIdentifier, topOfTree) {
   props.push(
     b.objectProperty(
       b.identifier(`[${templateIdentifier}.stylesheetTokens.shadowAttribute]`),
-      b.stringLiteral("true")
+      b.stringLiteral('true')
     )
   );
 
   if (topOfTree) {
     props.push(
-      b.objectProperty(b.identifier("ref"), b.identifier("$cmp.template"))
+      b.objectProperty(b.identifier('ref'), b.identifier('$cmp.template'))
     );
   }
 
   if (events) {
     events.value.properties.forEach((prop) => {
       const args = prop.value.right.right.arguments[0];
-      if (args.object.name === "$cmp") {
+      if (args.object.name === '$cmp') {
         props.push(
           b.property(
-            "init",
+            'init',
             b.identifier(
-              "on" +
+              'on' +
                 prop.key.value[0].toUpperCase() +
                 prop.key.value.substring(1)
             ),
@@ -557,7 +558,7 @@ function buildProps(element, component, templateIdentifier, topOfTree) {
           )
         );
       } else {
-        throw new Error("Unable to handle bound event: " + prop.key.value);
+        throw new Error('Unable to handle bound event: ' + prop.key.value);
       }
     });
   }
@@ -577,18 +578,18 @@ function buildProps(element, component, templateIdentifier, topOfTree) {
   if (classMap) {
     props.push(
       b.objectProperty(
-        b.identifier("className"),
+        b.identifier('className'),
         b.stringLiteral(getClassNameString(classMap.value))
       )
     );
   }
 
   if (styleMap) {
-    props.push(b.objectProperty(b.identifier("style"), styleMap.value));
+    props.push(b.objectProperty(b.identifier('style'), styleMap.value));
   }
 
   if (className) {
-    props.push(b.objectProperty(b.identifier("className"), className.value));
+    props.push(b.objectProperty(b.identifier('className'), className.value));
   }
 
   return props.length ? b.objectExpression(props) : b.nullLiteral();
@@ -597,7 +598,7 @@ function buildProps(element, component, templateIdentifier, topOfTree) {
 function processProp(prop) {
   if (
     n.CallExpression.check(prop.value) &&
-    prop.value.callee.name === "api_scoped_id"
+    prop.value.callee.name === 'api_scoped_id'
   ) {
     prop.value = prop.value.arguments[0];
   }
@@ -605,25 +606,25 @@ function processProp(prop) {
 }
 
 function getClassNameString(objectExpression) {
-  return objectExpression.properties.map((prop) => prop.key.value).join(" ");
+  return objectExpression.properties.map((prop) => prop.key.value).join(' ');
 }
 
 function removeLWCCode(ast) {
   const lwcIndex1 = ast.program.body.findIndex(
-    (el) => n.ImportDeclaration.check(el) && el.source.value === "lwc"
+    (el) => n.ImportDeclaration.check(el) && el.source.value === 'lwc'
   );
   ast.program.body[lwcIndex1] = parse(
     'import React from "react"'
   ).program.body[0];
 
   let lwcIndex2 = ast.program.body.findIndex(
-    (el) => n.ImportDeclaration.check(el) && el.source.value === "lwc"
+    (el) => n.ImportDeclaration.check(el) && el.source.value === 'lwc'
   );
 
   while (lwcIndex2 !== -1) {
     ast.program.body.splice(lwcIndex2, 1);
     lwcIndex2 = ast.program.body.findIndex(
-      (el) => n.ImportDeclaration.check(el) && el.source.value === "lwc"
+      (el) => n.ImportDeclaration.check(el) && el.source.value === 'lwc'
     );
   }
 
@@ -631,7 +632,7 @@ function removeLWCCode(ast) {
     (el) =>
       n.ExpressionStatement.check(el) &&
       n.CallExpression.check(el.expression) &&
-      el.expression.callee.name === "_registerDecorators"
+      el.expression.callee.name === '_registerDecorators'
   );
 
   if (registerDecoratorsIndex !== -1) {
@@ -649,7 +650,7 @@ function convertTemplate(ast) {
 
   removeLWCCode(ast);
 
-  templateAST.params = [b.identifier("$cmp")];
+  templateAST.params = [b.identifier('$cmp')];
   templateAST.body = buildReactCreateElements(
     templateAST,
     null,
@@ -676,7 +677,7 @@ function convertJavaScript(ast) {
       n.ExportDefaultDeclaration.check(el)
     );
     const templateIdentifier = exportStatement.declaration.arguments[1].properties.find(
-      (prop) => prop.key.name === "tmpl"
+      (prop) => prop.key.name === 'tmpl'
     ).value.name;
 
     exportStatement.declaration = exportStatement.declaration.arguments[0];
@@ -688,14 +689,14 @@ function convertJavaScript(ast) {
 }
 
 export function compile(id, source) {
-  if (id.includes("@lwc/engine/dist/engine.js") || id.includes("wire-service"))
-    return "export default undefined";
+  if (id.includes('@lwc/engine/dist/engine.js') || id.includes('wire-service'))
+    return 'export default undefined';
 
   const ast = parse(source);
 
-  if (id.endsWith(".html")) {
+  if (id.endsWith('.html')) {
     return convertTemplate(ast);
-  } else if (id.endsWith(".css")) {
+  } else if (id.endsWith('.css')) {
     return source;
   } else {
     return convertJavaScript(ast);
