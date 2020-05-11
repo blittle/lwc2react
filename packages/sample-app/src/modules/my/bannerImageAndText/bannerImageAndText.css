@@ -1,0 +1,31 @@
+.shop-now {
+  margin-top: 1em; }
+
+.shop-now-image {
+  width: 100%; }
+
+.shop-now-text {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%); }
+  .shop-now-text h2 {
+    color: #fff; }
+  .shop-now-text p {
+    margin-top: 0.53em; }
+
+.shop-now-text .large-paragraph {
+  color: #fff; }
+
+@media (max-width: 767px) {
+  .shop-now-text {
+    left: 50%;
+    margin-top: 0;
+    margin-bottom: 0; } }
+
+@media (min-width: 768px) {
+  .shop-now-text {
+    left: 50%; } }
+
+@media (min-width: 992px) {
+  .shop-now-text {
+    left: 15%; } }

@@ -1,0 +1,38 @@
+.shop-category-component {
+  background-image: url("/images/homepage/gray.jpg");
+  position: relative;
+  padding: 1em 0; }
+
+.shop-category-header {
+  margin-top: 0;
+  margin-bottom: 0; }
+
+.shop-category-header h3 {
+  margin-bottom: 0; }
+
+.shop-category-label {
+  margin-top: 0;
+  margin-bottom: 0; }
+
+.shop-category-header .mw-100 {
+  margin-top: 0;
+  margin-bottom: 0; }
+
+.shop-category-label-a {
+  text-decoration: underline; }
+
+@media (max-width: 767px) {
+  .shop-category-component {
+    line-height: 2em; }
+  .shop-category-header h3 {
+    margin-top: 0.5em;
+    margin-bottom: 0; } }
+
+@media (min-width: 768px) {
+  .shop-category-component {
+    padding: 2em 4em; } }
+
+@media (min-width: 992px) {
+  .shop-category-label-a {
+    text-decoration: underline;
+    font-size: 1.1em; } }

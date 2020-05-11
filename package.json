@@ -9,7 +9,9 @@
     "format": "prettier --write '**/*.{js,json}' '!{node_modules,packages}/**' '!package*.json' && lerna run format",
     "lint": "lerna run lint",
     "test": "lerna run test",
-    "version": "rm -f ./packages/**/CHANGELOG.md && npm run format"
+    "version": "rm -f ./packages/**/CHANGELOG.md && npm run format",
+    "postinstall": "lerna bootstrap",
+    "start": "lerna run serve"
   },
   "author": "Bret Little",
   "license": "MIT",
