@@ -1,4 +1,4 @@
-# lwc2react
+# lwc2react ![Node.js CI](https://github.com/blittle/lwc2react/workflows/Node.js%20CI/badge.svg) [![npm version](https://badge.fury.io/js/lwc2react.svg)](https://badge.fury.io/js/lwc2react)
 A rollup plugin for compile-time conversion of lwc components to react for easy interop. This is a proof of concept and _NOT_ ready for use in production!
 
 What is working:
