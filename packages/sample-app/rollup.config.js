@@ -8,7 +8,6 @@ import visualizer from 'rollup-plugin-visualizer';
 
 const outputDir = path.resolve(__dirname, `./src/dist`);
 const input = path.resolve(__dirname, './src/index.js');
-const output = path.join(outputDir, 'app.js');
 const env = process.env.NODE_ENV || 'development';
 
 export default {
@@ -30,7 +29,7 @@ export default {
     commonjs(),
     replace({ 'process.env.NODE_ENV': JSON.stringify(env) }),
     lwc2react({
-      debug: true,
+      debug: true, // change to a string to output a specific file for debugging
       include: '**/modules/my/**',
     }),
     visualizer({

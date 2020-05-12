@@ -1,0 +1,78 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Events bound events in template 1`] = `
+"import _implicitStylesheets from \\"./app.css\\";
+import React from \\"react\\";
+
+function tmpl($cmp) {
+  return React.createElement(\\"div\\", {
+    [tmpl.stylesheetTokens.shadowAttribute.toLowerCase()]: \\"true\\",
+    key: 2,
+    ref: $cmp.template
+  }, [React.createElement(\\"span\\", {
+    [tmpl.stylesheetTokens.shadowAttribute.toLowerCase()]: \\"true\\",
+    key: 0
+  }, $cmp.something), React.createElement(\\"button\\", {
+    [tmpl.stylesheetTokens.shadowAttribute.toLowerCase()]: \\"true\\",
+    key: 1,
+    onClick: $cmp.increment.bind($cmp)
+  }, \\"increment\\")]);
+}
+
+export default tmpl;
+tmpl.stylesheets = [];
+
+if (_implicitStylesheets) {
+  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets);
+}
+
+tmpl.stylesheetTokens = {
+  hostAttribute: \\"my-app_app-host\\",
+  shadowAttribute: \\"my-app_app\\"
+};"
+`;
+
+exports[`Events should render input form events and attributes 1`] = `
+"import _implicitStylesheets from \\"./searchBar.css\\";
+import React from \\"react\\";
+
+function tmpl($cmp) {
+  return React.createElement(\\"div\\", {
+    [tmpl.stylesheetTokens.shadowAttribute.toLowerCase()]: \\"true\\",
+    key: 3,
+    ref: $cmp.template,
+    className: \\"site-search\\"
+  }, [React.createElement(\\"span\\", {
+    [tmpl.stylesheetTokens.shadowAttribute.toLowerCase()]: \\"true\\",
+    key: 0,
+    className: \\"fa fa-search\\"
+  }, null), React.createElement(\\"input\\", {
+    [tmpl.stylesheetTokens.shadowAttribute.toLowerCase()]: \\"true\\",
+    key: 1,
+    onInput: $cmp.searchInputHandler.bind($cmp),
+    onKeyUp: $cmp.searchKeyUpHandler.bind($cmp),
+    \\"value\\": $cmp.query,
+    \\"autoFocus\\": true,
+    \\"placeholder\\": \\"Search (keywords, brands, etc)\\",
+    \\"type\\": \\"search\\",
+    className: \\"form-control search-field\\"
+  }, null), React.createElement(\\"i\\", {
+    [tmpl.stylesheetTokens.shadowAttribute.toLowerCase()]: \\"true\\",
+    key: 2,
+    onClick: $cmp.handleIconClick.bind($cmp),
+    className: \\"fa fa-search\\"
+  }, null)]);
+}
+
+export default tmpl;
+tmpl.stylesheets = [];
+
+if (_implicitStylesheets) {
+  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets);
+}
+
+tmpl.stylesheetTokens = {
+  hostAttribute: \\"my-searchBar_searchBar-host\\",
+  shadowAttribute: \\"my-searchBar_searchBar\\"
+};"
+`;

@@ -1,5 +1,6 @@
-import { LightningElement, api } from 'lwc';
+import { LightningElement } from 'lwc';
 
 export default class App extends LightningElement {
-  @api test = 5;
+  query = '';
+  list = [1, 2];
 }

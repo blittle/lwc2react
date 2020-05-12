@@ -9,12 +9,11 @@ What is working:
 1. Scoped CSS
 1. @api properties
 1. slots (named and anonymous)
-1. click events
 1. lifecycle methods
+1. Form and input events
 
 What is not working:
 
-1. Not all form/input events
 1. Custom events
 1. Wire adapters
 

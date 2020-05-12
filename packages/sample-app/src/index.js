@@ -1,4 +1,4 @@
-import MyApp from 'my/home';
+import MyApp from 'my/app';
 import React from 'react';
 import ReactDOM from 'react-dom';
 

@@ -1,4 +1,5 @@
 import { parse, prettyPrint, types } from 'recast';
+import { eventMap, attributeMap } from './dataMaps';
 
 const b = types.builders;
 const n = types.namedTypes;
@@ -82,8 +83,8 @@ function buildStyles(classAST, templateIdentifier) {
         const sheet = document.createElement("style");
         sheet.type = "text/css";
         sheet.textContent = stylesheet(
-          "[" + ${templateIdentifier}.stylesheetTokens.hostAttribute + "]",
-          "[" + ${templateIdentifier}.stylesheetTokens.shadowAttribute + "]",
+          "[" + ${templateIdentifier}.stylesheetTokens.hostAttribute.toLowerCase() + "]",
+          "[" + ${templateIdentifier}.stylesheetTokens.shadowAttribute.toLowerCase() + "]",
            null
         );
         document.head.appendChild(sheet);
@@ -339,7 +340,7 @@ function convertConstructorBlock(classAST) {
 function buildRenderMethod(classAST, templateIdentifier) {
   // maybe extending `this` like this is not okay?
   const render = parse(`function render() {
-    return ${templateIdentifier}(Object.assign(this, this.__s, this.props))
+    return ${templateIdentifier}(Object.assign(this, this.props, this.__s))
   }`);
   classAST.body.body.push(
     b.methodDefinition(
@@ -504,6 +505,16 @@ function getSlotName(slot) {
   );
 }
 
+function buildKey(prop) {
+  if (
+    n.CallExpression.check(prop.value) &&
+    prop.value.callee.name === 'api_key'
+  ) {
+    prop.value = prop.value.arguments[1];
+  }
+  return prop;
+}
+
 function buildProps(element, component, templateIdentifier, topOfTree) {
   const index = component ? 2 : 1;
 
@@ -525,15 +536,24 @@ function buildProps(element, component, templateIdentifier, topOfTree) {
   const events = element.arguments[index].properties.find(
     (prop) => prop.key.name === 'on'
   );
+  const key = element.arguments[index].properties.find(
+    (prop) => prop.key.name === 'key'
+  );
 
   const props = [];
 
   props.push(
     b.objectProperty(
-      b.identifier(`[${templateIdentifier}.stylesheetTokens.shadowAttribute]`),
+      b.identifier(
+        `[${templateIdentifier}.stylesheetTokens.shadowAttribute.toLowerCase()]`
+      ),
       b.stringLiteral('true')
     )
   );
+
+  if (key) {
+    props.push(buildKey(key));
+  }
 
   if (topOfTree) {
     props.push(
@@ -548,11 +568,7 @@ function buildProps(element, component, templateIdentifier, topOfTree) {
         props.push(
           b.property(
             'init',
-            b.identifier(
-              'on' +
-                prop.key.value[0].toUpperCase() +
-                prop.key.value.substring(1)
-            ),
+            b.identifier(eventMap['on' + prop.key.value] || prop.key.value),
             parse(`$cmp.${args.property.name}.bind($cmp)`).program.body[0]
               .expression
           )
@@ -596,6 +612,7 @@ function buildProps(element, component, templateIdentifier, topOfTree) {
 }
 
 function processProp(prop) {
+  prop.key = b.stringLiteral(attributeMap[prop.key.value] || prop.key.value);
   if (
     n.CallExpression.check(prop.value) &&
     prop.value.callee.name === 'api_scoped_id'

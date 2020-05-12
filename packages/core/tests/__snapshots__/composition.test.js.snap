@@ -1,0 +1,149 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Component composition should compile complex object @api properties 1`] = `
+"import _implicitStylesheets from \\"./comp.css\\";
+import React from \\"react\\";
+
+function tmpl($cmp) {
+  return React.createElement(\\"span\\", {
+    [tmpl.stylesheetTokens.shadowAttribute.toLowerCase()]: \\"true\\",
+    key: 0,
+    ref: $cmp.template
+  }, $cmp.prop.value);
+}
+
+export default tmpl;
+tmpl.stylesheets = [];
+
+if (_implicitStylesheets) {
+  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets);
+}
+
+tmpl.stylesheetTokens = {
+  hostAttribute: \\"my-comp_comp-host\\",
+  shadowAttribute: \\"my-comp_comp\\"
+};"
+`;
+
+exports[`Component composition should render nested component 1`] = `
+"import _implicitStylesheets from \\"./app.css\\";
+import _myComp from \\"my/comp\\";
+import React from \\"react\\";
+
+function tmpl($cmp) {
+  return React.createElement(_myComp, {
+    [tmpl.stylesheetTokens.shadowAttribute.toLowerCase()]: \\"true\\",
+    key: 0,
+    ref: $cmp.template
+  }, null);
+}
+
+export default tmpl;
+tmpl.stylesheets = [];
+
+if (_implicitStylesheets) {
+  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets);
+}
+
+tmpl.stylesheetTokens = {
+  hostAttribute: \\"my-app_app-host\\",
+  shadowAttribute: \\"my-app_app\\"
+};"
+`;
+
+exports[`Component composition should render nested components with slots and properties 1`] = `
+"import _implicitStylesheets from \\"./app.css\\";
+import _myComp from \\"my/comp\\";
+import React from \\"react\\";
+
+function tmpl($cmp) {
+  return React.createElement(_myComp, {
+    [tmpl.stylesheetTokens.shadowAttribute.toLowerCase()]: \\"true\\",
+    key: 2,
+    ref: $cmp.template,
+    \\"wow\\": $cmp.wow
+  }, {
+    \\"\\": React.createElement(\\"h1\\", {
+      [tmpl.stylesheetTokens.shadowAttribute.toLowerCase()]: \\"true\\",
+      key: 0
+    }, \\"a content\\"),
+
+    \\"b\\": React.createElement(\\"h2\\", {
+      [tmpl.stylesheetTokens.shadowAttribute.toLowerCase()]: \\"true\\",
+      key: 1,
+      \\"slot\\": \\"b\\"
+    }, \\"b content\\")
+  });
+}
+
+export default tmpl;
+tmpl.stylesheets = [];
+
+if (_implicitStylesheets) {
+  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets);
+}
+
+tmpl.stylesheetTokens = {
+  hostAttribute: \\"my-app_app-host\\",
+  shadowAttribute: \\"my-app_app\\"
+};"
+`;
+
+exports[`Component composition should render slots as children 1`] = `
+"import _implicitStylesheets from \\"./comp.css\\";
+import React from \\"react\\";
+
+function tmpl($cmp) {
+  return [
+    $cmp.props.children && $cmp.props.children[\\"\\"] ? $cmp.props.children[\\"\\"] : null,
+    $cmp.props.children && $cmp.props.children[\\"b\\"] ? $cmp.props.children[\\"b\\"] : null
+  ];
+}
+
+export default tmpl;
+tmpl.slots = [\\"\\", \\"b\\"];
+tmpl.stylesheets = [];
+
+if (_implicitStylesheets) {
+  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets);
+}
+
+tmpl.stylesheetTokens = {
+  hostAttribute: \\"my-comp_comp-host\\",
+  shadowAttribute: \\"my-comp_comp\\"
+};"
+`;
+
+exports[`Component composition should render slots as children with default markup 1`] = `
+"import _implicitStylesheets from \\"./comp.css\\";
+import React from \\"react\\";
+
+function tmpl($cmp) {
+  return [
+    $cmp.props.children && $cmp.props.children[\\"\\"] ? $cmp.props.children[\\"\\"] : React.createElement(\\"span\\", {
+      [tmpl.stylesheetTokens.shadowAttribute.toLowerCase()]: \\"true\\",
+      key: 0
+    }, \\"default a\\"),
+    $cmp.props.children && $cmp.props.children[\\"b\\"] ? $cmp.props.children[\\"b\\"] : React.createElement(\\"div\\", {
+      [tmpl.stylesheetTokens.shadowAttribute.toLowerCase()]: \\"true\\",
+      key: 3
+    }, React.createElement(\\"span\\", {
+      [tmpl.stylesheetTokens.shadowAttribute.toLowerCase()]: \\"true\\",
+      key: 2
+    }, \\"default b\\"))
+  ];
+}
+
+export default tmpl;
+tmpl.slots = [\\"\\", \\"b\\"];
+tmpl.stylesheets = [];
+
+if (_implicitStylesheets) {
+  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets);
+}
+
+tmpl.stylesheetTokens = {
+  hostAttribute: \\"my-comp_comp-host\\",
+  shadowAttribute: \\"my-comp_comp\\"
+};"
+`;

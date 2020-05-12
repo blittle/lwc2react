@@ -24,28 +24,7 @@ tmpl.stylesheetTokens = {
 };
         `.trim();
 
-    expect(compile('something.html', source)).toBe(
-      `
-import _implicitStylesheets from "./test.css";
-import React from "react";
-
-function tmpl($cmp) {
-  return null;
-}
-
-export default tmpl;
-tmpl.stylesheets = [];
-
-if (_implicitStylesheets) {
-  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets);
-}
-
-tmpl.stylesheetTokens = {
-  hostAttribute: "my-test_test-host",
-  shadowAttribute: "my-test_test"
-};
-        `.trim()
-    );
+    expect(compile('something.html', source)).toMatchSnapshot();
   });
 
   it('should compile div with text', function () {
@@ -76,31 +55,7 @@ tmpl.stylesheetTokens = {
 };
         `.trim();
 
-    expect(compile('something.html', source)).toBe(
-      `
-import _implicitStylesheets from "./test.css";
-import React from "react";
-
-function tmpl($cmp) {
-  return React.createElement("div", {
-    [tmpl.stylesheetTokens.shadowAttribute]: "true",
-    ref: $cmp.template
-  }, "hi");
-}
-
-export default tmpl;
-tmpl.stylesheets = [];
-
-if (_implicitStylesheets) {
-  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets);
-}
-
-tmpl.stylesheetTokens = {
-  hostAttribute: "my-test_test-host",
-  shadowAttribute: "my-test_test"
-};
-        `.trim()
-    );
+    expect(compile('something.html', source)).toMatchSnapshot();
   });
 
   it('should compile multiple nested divs with text', function () {
@@ -135,35 +90,7 @@ tmpl.stylesheetTokens = {
 };
         `.trim();
 
-    expect(compile('something.html', source)).toBe(
-      `
-import _implicitStylesheets from "./test.css";
-import React from "react";
-
-function tmpl($cmp) {
-  return React.createElement("div", {
-    [tmpl.stylesheetTokens.shadowAttribute]: "true",
-    ref: $cmp.template
-  }, [React.createElement("div", {
-    [tmpl.stylesheetTokens.shadowAttribute]: "true"
-  }, "hi 1"), React.createElement("div", {
-    [tmpl.stylesheetTokens.shadowAttribute]: "true"
-  }, "hi 2")]);
-}
-
-export default tmpl;
-tmpl.stylesheets = [];
-
-if (_implicitStylesheets) {
-  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets);
-}
-
-tmpl.stylesheetTokens = {
-  hostAttribute: "my-test_test-host",
-  shadowAttribute: "my-test_test"
-};
-        `.trim()
-    );
+    expect(compile('something.html', source)).toMatchSnapshot();
   });
 
   it('should compile class attributes', function () {
@@ -197,32 +124,7 @@ tmpl.stylesheetTokens = {
 };
         `.trim();
 
-    expect(compile('something.html', source)).toBe(
-      `
-import _implicitStylesheets from "./test.css";
-import React from "react";
-
-function tmpl($cmp) {
-  return React.createElement("div", {
-    [tmpl.stylesheetTokens.shadowAttribute]: "true",
-    ref: $cmp.template,
-    className: "hello"
-  }, "text");
-}
-
-export default tmpl;
-tmpl.stylesheets = [];
-
-if (_implicitStylesheets) {
-  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets);
-}
-
-tmpl.stylesheetTokens = {
-  hostAttribute: "my-test_test-host",
-  shadowAttribute: "my-test_test"
-};
-        `.trim()
-    );
+    expect(compile('something.html', source)).toMatchSnapshot();
   });
 
   it('should compile style attributes', function () {
@@ -255,35 +157,7 @@ tmpl.stylesheetTokens = {
 };
         `.trim();
 
-    expect(compile('something.html', source)).toBe(
-      `
-import _implicitStylesheets from "./test.css";
-import React from "react";
-
-function tmpl($cmp) {
-  return React.createElement("div", {
-    [tmpl.stylesheetTokens.shadowAttribute]: "true",
-    ref: $cmp.template,
-
-    style: {
-      "color": "red"
-    }
-  }, "text");
-}
-
-export default tmpl;
-tmpl.stylesheets = [];
-
-if (_implicitStylesheets) {
-  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets);
-}
-
-tmpl.stylesheetTokens = {
-  hostAttribute: "my-test_test-host",
-  shadowAttribute: "my-test_test"
-};
-        `.trim()
-    );
+    expect(compile('something.html', source)).toMatchSnapshot();
   });
 
   it('should compile generic attributes', function () {
@@ -317,32 +191,7 @@ tmpl.stylesheetTokens = {
 };
         `.trim();
 
-    expect(compile('something.html', source)).toBe(
-      `
-import _implicitStylesheets from "./test.css";
-import React from "react";
-
-function tmpl($cmp) {
-  return React.createElement("div", {
-    [tmpl.stylesheetTokens.shadowAttribute]: "true",
-    ref: $cmp.template,
-    "title": "wow"
-  }, "text");
-}
-
-export default tmpl;
-tmpl.stylesheets = [];
-
-if (_implicitStylesheets) {
-  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets);
-}
-
-tmpl.stylesheetTokens = {
-  hostAttribute: "my-test_test-host",
-  shadowAttribute: "my-test_test"
-};
-        `.trim()
-    );
+    expect(compile('something.html', source)).toMatchSnapshot();
   });
 
   it('should compile complex heirarchy with attributes', function () {
@@ -395,46 +244,7 @@ tmpl.stylesheetTokens = {
 };
         `.trim();
 
-    expect(compile('something.html', code)).toBe(
-      `
-import _implicitStylesheets from "./test.css";
-import React from "react";
-
-function tmpl($cmp) {
-  return React.createElement("figure", {
-    [tmpl.stylesheetTokens.shadowAttribute]: "true",
-    ref: $cmp.template,
-    "role": "group"
-  }, [React.createElement("img", {
-    [tmpl.stylesheetTokens.shadowAttribute]: "true",
-    "src": "operahousesteps.jpg",
-    "alt": "The Sydney Opera House",
-
-    style: {
-      "border": "1px",
-      "borderColor": "red"
-    }
-  }, null), React.createElement("figcaption", {
-    [tmpl.stylesheetTokens.shadowAttribute]: "true",
-    className: "something else"
-  }, ["We saw the opera ", React.createElement("cite", {
-    [tmpl.stylesheetTokens.shadowAttribute]: "true"
-  }, "Barber of Seville"), " here!"])]);
-}
-
-export default tmpl;
-tmpl.stylesheets = [];
-
-if (_implicitStylesheets) {
-  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets);
-}
-
-tmpl.stylesheetTokens = {
-  hostAttribute: "my-test_test-host",
-  shadowAttribute: "my-test_test"
-};
-        `.trim()
-    );
+    expect(compile('something.html', code)).toMatchSnapshot();
   });
 
   it('should compile the lwc class into a react class that renders the template', function () {
@@ -450,49 +260,7 @@ export default _registerComponent(Test, {
 });
     `;
 
-    expect(compile('something.js', source)).toBe(
-      `
-import ObservableMembrane from "observable-membrane";
-import _tmpl from "./test.html";
-import React from "react";
-
-class Test extends React.Component {
-  render() {
-    return _tmpl(Object.assign(this, this.__s, this.props));
-  }
-
-  componentDidMount() {
-    this.mounted = true;
-    this.stylesheets = [];
-
-    _tmpl.stylesheets.forEach(stylesheet => {
-      const sheet = document.createElement("style");
-      sheet.type = "text/css";
-
-      sheet.textContent = stylesheet(
-        "[" + _tmpl.stylesheetTokens.hostAttribute + "]",
-        "[" + _tmpl.stylesheetTokens.shadowAttribute + "]",
-        null
-      );
-
-      document.head.appendChild(sheet);
-      this.stylesheets.push(sheet);
-    });
-  }
-
-  componentWillUnmount() {
-    this.mounted = false;
-
-    this.stylesheets.forEach(sheet => {
-      if (sheet.parentNode)
-        sheet.parentNode.removeChild(sheet);
-    });
-  }
-}
-
-export default Test;
-    `.trim()
-    );
+    expect(compile('something.js', source)).toMatchSnapshot();
   });
 
   it('should generate the proper template with api bound props', function () {
@@ -523,31 +291,7 @@ tmpl.stylesheetTokens = {
   shadowAttribute: "my-product_product"
 };
 `;
-    expect(compile('something.html', source)).toBe(
-      `
-import _implicitStylesheets from "./product.css";
-import React from "react";
-
-function tmpl($cmp) {
-  return React.createElement("h1", {
-    [tmpl.stylesheetTokens.shadowAttribute]: "true",
-    ref: $cmp.template
-  }, ["Product: ", $cmp.params.productId]);
-}
-
-export default tmpl;
-tmpl.stylesheets = [];
-
-if (_implicitStylesheets) {
-  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets);
-}
-
-tmpl.stylesheetTokens = {
-  hostAttribute: "my-product_product-host",
-  shadowAttribute: "my-product_product"
-};
-`.trim()
-    );
+    expect(compile('something.html', source)).toMatchSnapshot();
   });
 
   it('should compile conditional blocks and expressions', function () {
@@ -586,76 +330,7 @@ export default _registerComponent(ProductImage, {
 });
     `;
 
-    expect(compile('some.js', source)).toBe(
-      `
-import ObservableMembrane from "observable-membrane";
-import React from "react";
-import _tmpl from "./app.html";
-
-class ProductImage extends React.Component {
-  constructor(...args) {
-    super(...args);
-
-    const membrane = new ObservableMembrane({
-      valueMutated: () => {
-        if (this.mounted)
-          this.forceUpdate();
-      }
-    });
-
-    this.__s = membrane.getProxy({});
-    this.template = React.createRef();
-    this.__s.someValue = 1;
-  }
-
-  change() {
-    const someValue = this.__s.someValue;
-
-    if (this.__s.someValue) {
-      this.__s.someValue = this.__s.someValue + 1;
-    } else {
-      this.__s.someValue = someValue + 1;
-    }
-
-    this.__s.someValue = this.__s.someValue ? this.__s.someValue + 1 : someValue + 1;
-  }
-
-  render() {
-    return _tmpl(Object.assign(this, this.__s, this.props));
-  }
-
-  componentDidMount() {
-    this.mounted = true;
-    this.stylesheets = [];
-
-    _tmpl.stylesheets.forEach(stylesheet => {
-      const sheet = document.createElement("style");
-      sheet.type = "text/css";
-
-      sheet.textContent = stylesheet(
-        "[" + _tmpl.stylesheetTokens.hostAttribute + "]",
-        "[" + _tmpl.stylesheetTokens.shadowAttribute + "]",
-        null
-      );
-
-      document.head.appendChild(sheet);
-      this.stylesheets.push(sheet);
-    });
-  }
-
-  componentWillUnmount() {
-    this.mounted = false;
-
-    this.stylesheets.forEach(sheet => {
-      if (sheet.parentNode)
-        sheet.parentNode.removeChild(sheet);
-    });
-  }
-}
-
-export default ProductImage;
-    `.trim()
-    );
+    expect(compile('some.js', source)).toMatchSnapshot();
   });
 
   it('should compile for loops', function () {
@@ -688,70 +363,7 @@ export default _registerComponent(ProductImage, {
 });
     `;
 
-    expect(compile('some.js', source)).toBe(
-      `
-import ObservableMembrane from "observable-membrane";
-import React from "react";
-import _tmpl from "./app.html";
-
-class ProductImage extends React.Component {
-  constructor(...args) {
-    super(...args);
-
-    const membrane = new ObservableMembrane({
-      valueMutated: () => {
-        if (this.mounted)
-          this.forceUpdate();
-      }
-    });
-
-    this.__s = membrane.getProxy({});
-    this.template = React.createRef();
-    this.__s.someValue = 1;
-  }
-
-  change() {
-    for (let i = this.__s.someValue; i < this.__s.someValue + 1; this.__s.someValue++) {
-      this.__s.someValue = this.__s.someValue + 1;
-    }
-  }
-
-  render() {
-    return _tmpl(Object.assign(this, this.__s, this.props));
-  }
-
-  componentDidMount() {
-    this.mounted = true;
-    this.stylesheets = [];
-
-    _tmpl.stylesheets.forEach(stylesheet => {
-      const sheet = document.createElement("style");
-      sheet.type = "text/css";
-
-      sheet.textContent = stylesheet(
-        "[" + _tmpl.stylesheetTokens.hostAttribute + "]",
-        "[" + _tmpl.stylesheetTokens.shadowAttribute + "]",
-        null
-      );
-
-      document.head.appendChild(sheet);
-      this.stylesheets.push(sheet);
-    });
-  }
-
-  componentWillUnmount() {
-    this.mounted = false;
-
-    this.stylesheets.forEach(sheet => {
-      if (sheet.parentNode)
-        sheet.parentNode.removeChild(sheet);
-    });
-  }
-}
-
-export default ProductImage;
-    `.trim()
-    );
+    expect(compile('some.js', source)).toMatchSnapshot();
   });
 
   it('should compile forof loops', function () {
@@ -784,70 +396,7 @@ export default _registerComponent(ProductImage, {
 });
     `;
 
-    expect(compile('some.js', source)).toBe(
-      `
-import ObservableMembrane from "observable-membrane";
-import React from "react";
-import _tmpl from "./app.html";
-
-class ProductImage extends React.Component {
-  constructor(...args) {
-    super(...args);
-
-    const membrane = new ObservableMembrane({
-      valueMutated: () => {
-        if (this.mounted)
-          this.forceUpdate();
-      }
-    });
-
-    this.__s = membrane.getProxy({});
-    this.template = React.createRef();
-    this.__s.arr = [1, 2];
-  }
-
-  change() {
-    for (let el of this.__s.arr) {
-      this.__s.arr.push(this.__s.something);
-    }
-  }
-
-  render() {
-    return _tmpl(Object.assign(this, this.__s, this.props));
-  }
-
-  componentDidMount() {
-    this.mounted = true;
-    this.stylesheets = [];
-
-    _tmpl.stylesheets.forEach(stylesheet => {
-      const sheet = document.createElement("style");
-      sheet.type = "text/css";
-
-      sheet.textContent = stylesheet(
-        "[" + _tmpl.stylesheetTokens.hostAttribute + "]",
-        "[" + _tmpl.stylesheetTokens.shadowAttribute + "]",
-        null
-      );
-
-      document.head.appendChild(sheet);
-      this.stylesheets.push(sheet);
-    });
-  }
-
-  componentWillUnmount() {
-    this.mounted = false;
-
-    this.stylesheets.forEach(sheet => {
-      if (sheet.parentNode)
-        sheet.parentNode.removeChild(sheet);
-    });
-  }
-}
-
-export default ProductImage;
-    `.trim()
-    );
+    expect(compile('some.js', source)).toMatchSnapshot();
   });
 
   it('should compile for:each directives', function () {
@@ -884,33 +433,7 @@ tmpl.stylesheetTokens = {
 };
         `.trim();
 
-    expect(compile('something.html', source)).toBe(
-      `
-import _implicitStylesheets from "./app.css";
-import React from "react";
-
-function tmpl($cmp) {
-  return React.createElement("ul", {
-    [tmpl.stylesheetTokens.shadowAttribute]: "true",
-    ref: $cmp.template
-  }, $cmp.list.map(item => React.createElement("li", {
-    [tmpl.stylesheetTokens.shadowAttribute]: "true"
-  }, item.value)));
-}
-
-export default tmpl;
-tmpl.stylesheets = [];
-
-if (_implicitStylesheets) {
-  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets);
-}
-
-tmpl.stylesheetTokens = {
-  hostAttribute: "my-app_app-host",
-  shadowAttribute: "my-app_app"
-};
-        `.trim()
-    );
+    expect(compile('something.html', source)).toMatchSnapshot();
   });
 
   it('should compile for:each directives with dynamic attributes', function () {
@@ -954,38 +477,7 @@ tmpl.stylesheetTokens = {
 };
         `.trim();
 
-    expect(compile('something.html', source)).toBe(
-      `
-import _implicitStylesheets from "./app.css";
-import React from "react";
-
-function tmpl($cmp) {
-  return React.createElement("ul", {
-    [tmpl.stylesheetTokens.shadowAttribute]: "true",
-    ref: $cmp.template
-  }, $cmp.list.map(item => React.createElement("li", {
-    [tmpl.stylesheetTokens.shadowAttribute]: "true",
-    "title": item.value,
-    className: item.value
-  }, React.createElement("span", {
-    [tmpl.stylesheetTokens.shadowAttribute]: "true",
-    className: $cmp.classProp
-  }, item.value))));
-}
-
-export default tmpl;
-tmpl.stylesheets = [];
-
-if (_implicitStylesheets) {
-  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets);
-}
-
-tmpl.stylesheetTokens = {
-  hostAttribute: "my-app_app-host",
-  shadowAttribute: "my-app_app"
-};
-        `.trim()
-    );
+    expect(compile('something.html', source)).toMatchSnapshot();
   });
 
   it('should compile if:true directives', function () {
@@ -1018,32 +510,7 @@ tmpl.stylesheetTokens = {
 };
         `.trim();
 
-    expect(compile('something.html', source)).toBe(
-      `
-import _implicitStylesheets from "./app.css";
-import React from "react";
-
-function tmpl($cmp) {
-  return [$cmp.someProp ? React.createElement("div", {
-    [tmpl.stylesheetTokens.shadowAttribute]: "true"
-  }, "a") : null, !$cmp.someProp ? React.createElement("div", {
-    [tmpl.stylesheetTokens.shadowAttribute]: "true"
-  }, "b") : null];
-}
-
-export default tmpl;
-tmpl.stylesheets = [];
-
-if (_implicitStylesheets) {
-  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets);
-}
-
-tmpl.stylesheetTokens = {
-  hostAttribute: "my-app_app-host",
-  shadowAttribute: "my-app_app"
-};
-        `.trim()
-    );
+    expect(compile('something.html', source)).toMatchSnapshot();
   });
   it('should convert ID attributes', function () {
     const source = `
@@ -1077,31 +544,6 @@ tmpl.stylesheetTokens = {
 };
         `.trim();
 
-    expect(compile('something.html', source)).toBe(
-      `
-import _implicitStylesheets from "./app.css";
-import React from "react";
-
-function tmpl($cmp) {
-  return React.createElement("div", {
-    [tmpl.stylesheetTokens.shadowAttribute]: "true",
-    ref: $cmp.template,
-    "id": "1"
-  }, "content");
-}
-
-export default tmpl;
-tmpl.stylesheets = [];
-
-if (_implicitStylesheets) {
-  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets);
-}
-
-tmpl.stylesheetTokens = {
-  hostAttribute: "my-app_app-host",
-  shadowAttribute: "my-app_app"
-};
-        `.trim()
-    );
+    expect(compile('something.html', source)).toMatchSnapshot();
   });
 });
