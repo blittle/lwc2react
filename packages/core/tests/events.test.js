@@ -110,4 +110,39 @@ tmpl.stylesheetTokens = {
 
     expect(compile('some.html', source)).toMatchSnapshot();
   });
+
+  it('should dispatch custom events from the component ref', function () {
+    const source = `
+import { registerDecorators as _registerDecorators } from "lwc";
+import _tmpl from "./searchBar.html";
+import { registerComponent as _registerComponent } from "lwc";
+import { LightningElement } from 'lwc';
+/**
+ * Search Bar where visitors can search for stuff
+ */
+class SearchBar extends LightningElement {
+  constructor(...args) {
+    super(...args);
+    this.query = '';
+  }
+
+  performSearch() {
+    this.template.dispatchEvent(new CustomEvent('someevent', {
+      detail: this.query
+    }));
+  }
+}
+_registerDecorators(SearchBar, {
+  publicProps: {
+    query: {
+      config: 0
+    }
+  }
+})
+export default _registerComponent(SearchBar, {
+  tmpl: _tmpl
+});
+    `;
+    expect(compile('something.js', source)).toMatchSnapshot();
+  });
 });

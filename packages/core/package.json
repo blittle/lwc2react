@@ -8,7 +8,6 @@
     "build": "babel src -d lib",
     "format": "prettier --write '**/*.{js,json}' '!{node_modules,lib,coverage}/**' '!package*.json'",
     "lint": "eslint '**/*.js'",
-    "prepublish": "npm run build",
     "test": "jest --verbose --coverage"
   },
   "author": "Bret Little",

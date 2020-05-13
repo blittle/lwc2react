@@ -9,7 +9,13 @@ export default class SearchBar extends LightningElement {
   /**
    * Use router to make query search
    */
-  performSearch() {}
+  performSearch() {
+    this.dispatchEvent(
+      new CustomEvent('someevent', {
+        detail: this.query,
+      })
+    );
+  }
 
   /**
    * Handles pressing 'Enter' in the search field
