@@ -16,7 +16,10 @@ class Test extends React.Component {
       }
     });
 
-    this.__s = membrane.getProxy({});
+    this.__s = membrane.getProxy({
+      setA: this.setA
+    });
+
     this.template = React.createRef();
     this.__s.a = 1;
   }
@@ -46,6 +49,13 @@ class Test extends React.Component {
       document.head.appendChild(sheet);
       this.stylesheets.push(sheet);
     });
+
+    _tmpl.customEvents.forEach(event => {
+      const name = event[0];
+      const ref = event[1];
+      this[ref] = this[ref].bind(this);
+      this.template.current.addEventListener(name, this[ref]);
+    });
   }
 
   componentWillUnmount() {
@@ -54,6 +64,12 @@ class Test extends React.Component {
     this.stylesheets.forEach(sheet => {
       if (sheet.parentNode)
         sheet.parentNode.removeChild(sheet);
+    });
+
+    _tmpl.customEvents.forEach(event => {
+      const name = event[0];
+      const ref = event[1];
+      this.template.current.removeEventListener(name, this[ref]);
     });
   }
 }
@@ -77,7 +93,10 @@ class Test extends React.Component {
       }
     });
 
-    this.__s = membrane.getProxy({});
+    this.__s = membrane.getProxy({
+      setA: this.setA
+    });
+
     this.template = React.createRef();
     this.__s.a = 1;
   }
@@ -107,6 +126,13 @@ class Test extends React.Component {
       document.head.appendChild(sheet);
       this.stylesheets.push(sheet);
     });
+
+    _tmpl.customEvents.forEach(event => {
+      const name = event[0];
+      const ref = event[1];
+      this[ref] = this[ref].bind(this);
+      this.template.current.addEventListener(name, this[ref]);
+    });
   }
 
   componentWillUnmount() {
@@ -115,6 +141,12 @@ class Test extends React.Component {
     this.stylesheets.forEach(sheet => {
       if (sheet.parentNode)
         sheet.parentNode.removeChild(sheet);
+    });
+
+    _tmpl.customEvents.forEach(event => {
+      const name = event[0];
+      const ref = event[1];
+      this.template.current.removeEventListener(name, this[ref]);
     });
   }
 }
@@ -164,6 +196,13 @@ class App extends React.Component {
       document.head.appendChild(sheet);
       this.stylesheets.push(sheet);
     });
+
+    _tmpl.customEvents.forEach(event => {
+      const name = event[0];
+      const ref = event[1];
+      this[ref] = this[ref].bind(this);
+      this.template.current.addEventListener(name, this[ref]);
+    });
   }
 
   componentWillUnmount() {
@@ -172,6 +211,12 @@ class App extends React.Component {
     this.stylesheets.forEach(sheet => {
       if (sheet.parentNode)
         sheet.parentNode.removeChild(sheet);
+    });
+
+    _tmpl.customEvents.forEach(event => {
+      const name = event[0];
+      const ref = event[1];
+      this.template.current.removeEventListener(name, this[ref]);
     });
   }
 }
@@ -221,6 +266,13 @@ class App extends React.Component {
       document.head.appendChild(sheet);
       this.stylesheets.push(sheet);
     });
+
+    _tmpl.customEvents.forEach(event => {
+      const name = event[0];
+      const ref = event[1];
+      this[ref] = this[ref].bind(this);
+      this.template.current.addEventListener(name, this[ref]);
+    });
   }
 
   componentWillUnmount() {
@@ -229,6 +281,12 @@ class App extends React.Component {
     this.stylesheets.forEach(sheet => {
       if (sheet.parentNode)
         sheet.parentNode.removeChild(sheet);
+    });
+
+    _tmpl.customEvents.forEach(event => {
+      const name = event[0];
+      const ref = event[1];
+      this.template.current.removeEventListener(name, this[ref]);
     });
   }
 }
@@ -291,6 +349,13 @@ class ProductImage extends React.Component {
       document.head.appendChild(sheet);
       this.stylesheets.push(sheet);
     });
+
+    _tmpl.customEvents.forEach(event => {
+      const name = event[0];
+      const ref = event[1];
+      this[ref] = this[ref].bind(this);
+      this.template.current.addEventListener(name, this[ref]);
+    });
   }
 
   componentWillUnmount() {
@@ -299,6 +364,12 @@ class ProductImage extends React.Component {
     this.stylesheets.forEach(sheet => {
       if (sheet.parentNode)
         sheet.parentNode.removeChild(sheet);
+    });
+
+    _tmpl.customEvents.forEach(event => {
+      const name = event[0];
+      const ref = event[1];
+      this.template.current.removeEventListener(name, this[ref]);
     });
   }
 }
@@ -322,7 +393,10 @@ class App extends React.Component {
       }
     });
 
-    this.__s = membrane.getProxy({});
+    this.__s = membrane.getProxy({
+      doSomething: this.doSomething
+    });
+
     this.template = React.createRef();
     this.__s.wow = \\"hi2\\";
     this.__s.other = \\"hi3\\";
@@ -354,6 +428,13 @@ class App extends React.Component {
       document.head.appendChild(sheet);
       this.stylesheets.push(sheet);
     });
+
+    _tmpl.customEvents.forEach(event => {
+      const name = event[0];
+      const ref = event[1];
+      this[ref] = this[ref].bind(this);
+      this.template.current.addEventListener(name, this[ref]);
+    });
   }
 
   componentWillUnmount() {
@@ -362,6 +443,12 @@ class App extends React.Component {
     this.stylesheets.forEach(sheet => {
       if (sheet.parentNode)
         sheet.parentNode.removeChild(sheet);
+    });
+
+    _tmpl.customEvents.forEach(event => {
+      const name = event[0];
+      const ref = event[1];
+      this.template.current.removeEventListener(name, this[ref]);
     });
   }
 }

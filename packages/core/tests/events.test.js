@@ -111,7 +111,7 @@ tmpl.stylesheetTokens = {
     expect(compile('some.html', source)).toMatchSnapshot();
   });
 
-  it('should dispatch custom events from the component ref', function () {
+  it('should dispatch custom events from the template', function () {
     const source = `
 import { registerDecorators as _registerDecorators } from "lwc";
 import _tmpl from "./searchBar.html";
@@ -144,5 +144,110 @@ export default _registerComponent(SearchBar, {
 });
     `;
     expect(compile('something.js', source)).toMatchSnapshot();
+  });
+
+  it('should dispatch custom events from the component ref', function () {
+    const source = `
+import { registerDecorators as _registerDecorators } from "lwc";
+import _tmpl from "./searchBar.html";
+import { registerComponent as _registerComponent } from "lwc";
+import { LightningElement } from 'lwc';
+/**
+ * Search Bar where visitors can search for stuff
+ */
+class SearchBar extends LightningElement {
+  constructor(...args) {
+    super(...args);
+    this.query = '';
+  }
+
+  performSearch() {
+    this.dispatchEvent(new CustomEvent('someevent', {
+      detail: this.query
+    }));
+  }
+}
+_registerDecorators(SearchBar, {
+  publicProps: {
+    query: {
+      config: 0
+    }
+  }
+})
+export default _registerComponent(SearchBar, {
+  tmpl: _tmpl
+});
+    `;
+    expect(compile('something.js', source)).toMatchSnapshot();
+  });
+
+  it('should add event listeners to ref', function () {
+    const source = `
+import { registerDecorators as _registerDecorators } from "lwc";
+import _tmpl from "./searchBar.html";
+import { registerComponent as _registerComponent } from "lwc";
+import { LightningElement } from 'lwc';
+/**
+ * Search Bar where visitors can search for stuff
+ */
+class SearchBar extends LightningElement {
+  constructor(...args) {
+    super(...args);
+    this.query = '';
+    this.template.addEventListener('something', this.performSearch);
+    this.addEventListener('something', this.performSearch);
+  }
+
+  performSearch() {}
+}
+_registerDecorators(SearchBar, {
+  publicProps: {
+    query: {
+      config: 0
+    }
+  }
+})
+export default _registerComponent(SearchBar, {
+  tmpl: _tmpl
+});
+    `;
+    expect(compile('something.js', source)).toMatchSnapshot();
+  });
+
+  it('should convert custom events on templates', function () {
+    const source = `
+import _implicitStylesheets from "./header.css";
+import _mySearchBar from "my/searchBar";
+import { registerTemplate } from "lwc";
+function tmpl($api, $cmp, $slotset, $ctx) {
+  const {
+    b: api_bind,
+    c: api_custom_element
+  } = $api;
+  const {
+    _m0
+  } = $ctx;
+  return [api_custom_element("my-search-bar", _mySearchBar, {
+    props: {
+      "query": $cmp.query
+    },
+    key: 0,
+    on: {
+      "search": _m0 || ($ctx._m0 = api_bind($cmp.updateQuery))
+    }
+  }, [])];
+}
+export default registerTemplate(tmpl);
+tmpl.stylesheets = [];
+if (_implicitStylesheets) {
+  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets)
+}
+tmpl.stylesheetTokens = {
+  hostAttribute: "my-header_header-host",
+  shadowAttribute: "my-header_header"
+};
+    `;
+
+    expect(compile('something.html', source)).toMatchSnapshot();
   });
 });

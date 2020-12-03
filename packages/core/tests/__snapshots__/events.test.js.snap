@@ -29,7 +29,118 @@ if (_implicitStylesheets) {
 tmpl.stylesheetTokens = {
   hostAttribute: \\"my-app_app-host\\",
   shadowAttribute: \\"my-app_app\\"
-};"
+};
+
+tmpl.customEvents = [];"
+`;
+
+exports[`Events should add event listeners to ref 1`] = `
+"import ObservableMembrane from \\"observable-membrane\\";
+import React from \\"react\\";
+import _tmpl from \\"./searchBar.html\\";
+
+/**
+ * Search Bar where visitors can search for stuff
+ */
+class SearchBar extends React.Component {
+  constructor(...args) {
+    super(...args);
+
+    const membrane = new ObservableMembrane({
+      valueMutated: () => {
+        if (this.mounted)
+          this.forceUpdate();
+      }
+    });
+
+    this.__s = membrane.getProxy({
+      performSearch: this.performSearch
+    });
+
+    this.template = React.createRef();
+    this.__s.query = \\"\\";
+    this.template.addEventListener(\\"something\\", this.__s.performSearch);
+    this.template.current.addEventListener(\\"something\\", this.__s.performSearch);
+  }
+
+  performSearch() {}
+
+  render() {
+    return _tmpl(Object.assign(this, this.props, this.__s));
+  }
+
+  componentDidMount() {
+    this.mounted = true;
+    this.stylesheets = [];
+
+    _tmpl.stylesheets.forEach(stylesheet => {
+      const sheet = document.createElement(\\"style\\");
+      sheet.type = \\"text/css\\";
+
+      sheet.textContent = stylesheet(
+        \\"[\\" + _tmpl.stylesheetTokens.hostAttribute.toLowerCase() + \\"]\\",
+        \\"[\\" + _tmpl.stylesheetTokens.shadowAttribute.toLowerCase() + \\"]\\",
+        null
+      );
+
+      document.head.appendChild(sheet);
+      this.stylesheets.push(sheet);
+    });
+
+    _tmpl.customEvents.forEach(event => {
+      const name = event[0];
+      const ref = event[1];
+      this[ref] = this[ref].bind(this);
+      this.template.current.addEventListener(name, this[ref]);
+    });
+  }
+
+  componentWillUnmount() {
+    this.mounted = false;
+
+    this.stylesheets.forEach(sheet => {
+      if (sheet.parentNode)
+        sheet.parentNode.removeChild(sheet);
+    });
+
+    _tmpl.customEvents.forEach(event => {
+      const name = event[0];
+      const ref = event[1];
+      this.template.current.removeEventListener(name, this[ref]);
+    });
+  }
+}
+
+export default SearchBar;"
+`;
+
+exports[`Events should convert custom events on templates 1`] = `
+"import _implicitStylesheets from \\"./header.css\\";
+import _mySearchBar from \\"my/searchBar\\";
+import React from \\"react\\";
+
+function tmpl($cmp) {
+  return React.createElement(_mySearchBar, {
+    [tmpl.stylesheetTokens.shadowAttribute.toLowerCase()]: \\"true\\",
+    key: 0,
+    ref: $cmp.template,
+    \\"query\\": $cmp.query
+  }, null);
+}
+
+export default tmpl;
+tmpl.stylesheets = [];
+
+if (_implicitStylesheets) {
+  tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets);
+}
+
+tmpl.stylesheetTokens = {
+  hostAttribute: \\"my-header_header-host\\",
+  shadowAttribute: \\"my-header_header\\"
+};
+
+tmpl.customEvents = [[\\"search\\", \\"updateQuery\\"]];"
 `;
 
 exports[`Events should dispatch custom events from the component ref 1`] = `
@@ -51,7 +162,92 @@ class SearchBar extends React.Component {
       }
     });
 
-    this.__s = membrane.getProxy({});
+    this.__s = membrane.getProxy({
+      performSearch: this.performSearch
+    });
+
+    this.template = React.createRef();
+    this.__s.query = \\"\\";
+  }
+
+  performSearch() {
+    this.template.current.dispatchEvent(new CustomEvent(\\"someevent\\", {
+      detail: this.query
+    }));
+  }
+
+  render() {
+    return _tmpl(Object.assign(this, this.props, this.__s));
+  }
+
+  componentDidMount() {
+    this.mounted = true;
+    this.stylesheets = [];
+
+    _tmpl.stylesheets.forEach(stylesheet => {
+      const sheet = document.createElement(\\"style\\");
+      sheet.type = \\"text/css\\";
+
+      sheet.textContent = stylesheet(
+        \\"[\\" + _tmpl.stylesheetTokens.hostAttribute.toLowerCase() + \\"]\\",
+        \\"[\\" + _tmpl.stylesheetTokens.shadowAttribute.toLowerCase() + \\"]\\",
+        null
+      );
+
+      document.head.appendChild(sheet);
+      this.stylesheets.push(sheet);
+    });
+
+    _tmpl.customEvents.forEach(event => {
+      const name = event[0];
+      const ref = event[1];
+      this[ref] = this[ref].bind(this);
+      this.template.current.addEventListener(name, this[ref]);
+    });
+  }
+
+  componentWillUnmount() {
+    this.mounted = false;
+
+    this.stylesheets.forEach(sheet => {
+      if (sheet.parentNode)
+        sheet.parentNode.removeChild(sheet);
+    });
+
+    _tmpl.customEvents.forEach(event => {
+      const name = event[0];
+      const ref = event[1];
+      this.template.current.removeEventListener(name, this[ref]);
+    });
+  }
+}
+
+export default SearchBar;"
+`;
+
+exports[`Events should dispatch custom events from the template 1`] = `
+"import ObservableMembrane from \\"observable-membrane\\";
+import React from \\"react\\";
+import _tmpl from \\"./searchBar.html\\";
+
+/**
+ * Search Bar where visitors can search for stuff
+ */
+class SearchBar extends React.Component {
+  constructor(...args) {
+    super(...args);
+
+    const membrane = new ObservableMembrane({
+      valueMutated: () => {
+        if (this.mounted)
+          this.forceUpdate();
+      }
+    });
+
+    this.__s = membrane.getProxy({
+      performSearch: this.performSearch
+    });
+
     this.template = React.createRef();
     this.__s.query = \\"\\";
   }
@@ -83,6 +279,13 @@ class SearchBar extends React.Component {
       document.head.appendChild(sheet);
       this.stylesheets.push(sheet);
     });
+
+    _tmpl.customEvents.forEach(event => {
+      const name = event[0];
+      const ref = event[1];
+      this[ref] = this[ref].bind(this);
+      this.template.current.addEventListener(name, this[ref]);
+    });
   }
 
   componentWillUnmount() {
@@ -91,6 +294,12 @@ class SearchBar extends React.Component {
     this.stylesheets.forEach(sheet => {
       if (sheet.parentNode)
         sheet.parentNode.removeChild(sheet);
+    });
+
+    _tmpl.customEvents.forEach(event => {
+      const name = event[0];
+      const ref = event[1];
+      this.template.current.removeEventListener(name, this[ref]);
     });
   }
 }
@@ -140,5 +349,7 @@ if (_implicitStylesheets) {
 tmpl.stylesheetTokens = {
   hostAttribute: \\"my-searchBar_searchBar-host\\",
   shadowAttribute: \\"my-searchBar_searchBar\\"
-};"
+};
+
+tmpl.customEvents = [];"
 `;

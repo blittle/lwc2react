@@ -11,8 +11,10 @@ export default class SearchBar extends LightningElement {
    */
   performSearch() {
     this.dispatchEvent(
-      new CustomEvent('someevent', {
+      new CustomEvent('search', {
         detail: this.query,
+        bubbles: true,
+        composed: true,
       })
     );
   }

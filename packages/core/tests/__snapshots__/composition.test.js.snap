@@ -22,7 +22,9 @@ if (_implicitStylesheets) {
 tmpl.stylesheetTokens = {
   hostAttribute: \\"my-comp_comp-host\\",
   shadowAttribute: \\"my-comp_comp\\"
-};"
+};
+
+tmpl.customEvents = [];"
 `;
 
 exports[`Component composition should render nested component 1`] = `
@@ -48,7 +50,9 @@ if (_implicitStylesheets) {
 tmpl.stylesheetTokens = {
   hostAttribute: \\"my-app_app-host\\",
   shadowAttribute: \\"my-app_app\\"
-};"
+};
+
+tmpl.customEvents = [];"
 `;
 
 exports[`Component composition should render nested components with slots and properties 1`] = `
@@ -86,7 +90,9 @@ if (_implicitStylesheets) {
 tmpl.stylesheetTokens = {
   hostAttribute: \\"my-app_app-host\\",
   shadowAttribute: \\"my-app_app\\"
-};"
+};
+
+tmpl.customEvents = [];"
 `;
 
 exports[`Component composition should render slots as children 1`] = `
@@ -111,7 +117,9 @@ if (_implicitStylesheets) {
 tmpl.stylesheetTokens = {
   hostAttribute: \\"my-comp_comp-host\\",
   shadowAttribute: \\"my-comp_comp\\"
-};"
+};
+
+tmpl.customEvents = [];"
 `;
 
 exports[`Component composition should render slots as children with default markup 1`] = `
@@ -145,5 +153,7 @@ if (_implicitStylesheets) {
 tmpl.stylesheetTokens = {
   hostAttribute: \\"my-comp_comp-host\\",
   shadowAttribute: \\"my-comp_comp\\"
-};"
+};
+
+tmpl.customEvents = [];"
 `;

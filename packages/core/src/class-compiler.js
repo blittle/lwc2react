@@ -60,7 +60,9 @@ function convertConstructorBlock(classAST, publicProps, classMethods) {
         }
       });
 
-      this.__s = membrane.getProxy({});
+      this.__s = membrane.getProxy({
+        ${classMethods.map((method) => `${method}: this.${method}`)}
+      });
       this.template = React.createRef();
     `);
 
@@ -87,6 +89,12 @@ function buildRenderMethod(classAST, templateIdentifier) {
   );
 }
 
+function getMethodIndex(classAST, name) {
+  return classAST.body.body.findIndex(
+    (el) => n.MethodDefinition.check(el) && el.key.name === name
+  );
+}
+
 function convertLifeCycleMethods(classAST) {
   const componentDidMount = classAST.body.body.find(
     (el) => n.MethodDefinition.check(el) && el.key.name === 'componentDidMount'
@@ -95,13 +103,12 @@ function convertLifeCycleMethods(classAST) {
     (el) =>
       n.MethodDefinition.check(el) && el.key.name === 'componentWillUnmount'
   );
-  const connectedCallbackIndex = classAST.body.body.findIndex(
-    (el) => n.MethodDefinition.check(el) && el.key.name === 'connectedCallback'
+  const connectedCallbackIndex = getMethodIndex(classAST, 'connectedCallback');
+  let disconnectedCallbackIndex = getMethodIndex(
+    classAST,
+    'disconnectedCallback'
   );
-  const disconnectedCallbackIndex = classAST.body.body.findIndex(
-    (el) =>
-      n.MethodDefinition.check(el) && el.key.name === 'disconnectedCallback'
-  );
+
   const renderedCallback = classAST.body.body.find(
     (el) => n.MethodDefinition.check(el) && el.key.name === 'renderedCallback'
   );
@@ -118,6 +125,10 @@ function convertLifeCycleMethods(classAST) {
   }
 
   if (disconnectedCallbackIndex !== -1) {
+    disconnectedCallbackIndex = getMethodIndex(
+      classAST,
+      'disconnectedCallback'
+    );
     const disconnectedCallback = classAST.body.body[disconnectedCallbackIndex];
     componentWillUnmount.value.body.body.push(
       ...disconnectedCallback.value.body.body
@@ -182,10 +193,20 @@ function processCallExpression(callExpression, options) {
       n.ThisExpression.check(member.object) &&
       ![...options.classMethods, 'template'].includes(member.property.name)
     ) {
-      callExpression.expression.callee = processExpression(
-        callExpression.expression.callee,
-        options
-      );
+      if (
+        member.property.name === 'dispatchEvent' ||
+        member.property.name === 'addEventListener' ||
+        member.property.name === 'removeEventListener'
+      ) {
+        callExpression.expression.callee = b.identifier(
+          'this.template.current.' + member.property.name
+        );
+      } else {
+        callExpression.expression.callee = processExpression(
+          callExpression.expression.callee,
+          options
+        );
+      }
     }
   }
 
@@ -322,6 +343,13 @@ function buildStyles(classAST, templateIdentifier) {
         document.head.appendChild(sheet);
         this.stylesheets.push(sheet);
     })
+
+    ${templateIdentifier}.customEvents.forEach(event => {
+      const name = event[0];
+      const ref = event[1];
+      this[ref] = this[ref].bind(this);
+      this.template.current.addEventListener(name, this[ref]);
+    });
   `);
 
   const willUnmountText = parse(`
@@ -329,6 +357,12 @@ function buildStyles(classAST, templateIdentifier) {
     this.stylesheets.forEach(sheet => {
       if (sheet.parentNode) sheet.parentNode.removeChild(sheet);
     })
+
+    ${templateIdentifier}.customEvents.forEach(event => {
+      const name = event[0];
+      const ref = event[1];
+      this.template.current.removeEventListener(name, this[ref]);
+    });
   `);
 
   classAST.body.body.push(
