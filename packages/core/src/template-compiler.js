@@ -12,7 +12,11 @@ function getTemplateAST(ast) {
   );
 }
 
-function buildReactCreateElements(templateAST, classAST, templateIdentifier) {
+function buildReactCreateElements(
+  templateAST,
+  customEvents,
+  templateIdentifier
+) {
   const returnAst = templateAST.body.body.find((el) =>
     n.ReturnStatement.check(el)
   );
@@ -23,6 +27,7 @@ function buildReactCreateElements(templateAST, classAST, templateIdentifier) {
         ? recurseElementTree(returnAst.argument.elements, templateIdentifier, {
             slots: false,
             topOfTree: true,
+            customEvents,
           })
         : b.nullLiteral()
     ),
@@ -38,6 +43,7 @@ function recurseElementTree(astArray, templateIdentifier, options) {
         [element.consequent],
         templateIdentifier,
         {
+          ...options,
           slots: false,
           topOfTree: false,
           ref: options.ref,
@@ -47,6 +53,7 @@ function recurseElementTree(astArray, templateIdentifier, options) {
         [element.alternate],
         templateIdentifier,
         {
+          ...options,
           slots: false,
           topOfTree: false,
           ref: options.ref,
@@ -60,8 +67,15 @@ function recurseElementTree(astArray, templateIdentifier, options) {
     if (callee === 'api_element') {
       return b.callExpression(b.identifier('React.createElement'), [
         element.arguments[0],
-        buildProps(element, false, templateIdentifier, options.topOfTree),
+        buildProps(
+          element,
+          false,
+          templateIdentifier,
+          options.topOfTree,
+          options.customEvents
+        ),
         buildChildren(element, templateIdentifier, {
+          ...options,
           slots: false,
           topOfTree: false,
           ref: options.ref,
@@ -74,15 +88,26 @@ function recurseElementTree(astArray, templateIdentifier, options) {
     } else if (callee === 'api_custom_element') {
       return b.callExpression(b.identifier('React.createElement'), [
         element.arguments[1],
-        buildProps(element, true, templateIdentifier, options.topOfTree),
+        buildProps(
+          element,
+          true,
+          templateIdentifier,
+          options.topOfTree,
+          options.customEvents
+        ),
         buildChildren(element, templateIdentifier, {
+          ...options,
           slots: true,
           topOfTree: false,
           ref: options.ref,
         }),
       ]);
     } else if (callee === 'api_slot') {
-      return getChildrenFromSlot(element, templateIdentifier);
+      return getChildrenFromSlot(
+        element,
+        templateIdentifier,
+        options.customEvents
+      );
     } else {
       throw new Error('cannot process: ' + callee);
     }
@@ -107,14 +132,14 @@ function recurseElementTree(astArray, templateIdentifier, options) {
   }
 }
 
-function getChildrenFromSlot(element, templateIdentifier) {
+function getChildrenFromSlot(element, templateIdentifier, customEvents) {
   const childTernary = parse(
     `($cmp.props.children && $cmp.props.children["${element.arguments[0].value}"]) ? $cmp.props.children["${element.arguments[0].value}"] : null`
   ).program.body[0].expression;
   childTernary.alternate = recurseElementTree(
     element.arguments[2]?.elements,
     templateIdentifier,
-    { slots: false, topOfTree: false }
+    { slots: false, topOfTree: false, customEvents }
   );
   return childTernary;
 }
@@ -146,6 +171,7 @@ function buildChildren(element, templateIdentifier, options) {
         [child.arguments[1].body.body[0].argument],
         templateIdentifier,
         {
+          ...options,
           slots: false,
           topOfTree: false,
           ref: param,
@@ -162,7 +188,13 @@ function buildChildren(element, templateIdentifier, options) {
   return recurseElementTree(child?.elements, templateIdentifier, options);
 }
 
-function buildProps(element, component, templateIdentifier, topOfTree) {
+function buildProps(
+  element,
+  component,
+  templateIdentifier,
+  topOfTree,
+  customEvents
+) {
   const index = component ? 2 : 1;
 
   const classMap = element.arguments[index].properties.find(
@@ -212,14 +244,20 @@ function buildProps(element, component, templateIdentifier, topOfTree) {
     events.value.properties.forEach((prop) => {
       const args = prop.value.right.right.arguments[0];
       if (args.object.name === '$cmp') {
-        props.push(
-          b.property(
-            'init',
-            b.identifier(eventMap['on' + prop.key.value] || prop.key.value),
-            parse(`$cmp.${args.property.name}.bind($cmp)`).program.body[0]
-              .expression
-          )
-        );
+        if (eventMap['on' + prop.key.value]) {
+          // native event
+          props.push(
+            b.property(
+              'init',
+              b.identifier(eventMap['on' + prop.key.value] || prop.key.value),
+              parse(`$cmp.${args.property.name}.bind($cmp)`).program.body[0]
+                .expression
+            )
+          );
+        } else {
+          // custom event
+          customEvents.push([prop.key.value, args.property.name]);
+        }
       } else {
         throw new Error('Unable to handle bound event: ' + prop.key.value);
       }
@@ -291,17 +329,24 @@ export function compileTemplate(ast) {
   );
   const templateIdentifier = exportStatement.declaration.arguments[0].name;
 
+  const customEvents = [];
+
   removeLWCCode(ast);
 
   templateAST.params = [b.identifier('$cmp')];
   templateAST.body = buildReactCreateElements(
     templateAST,
-    null,
+    customEvents,
     templateIdentifier,
     null
   );
 
   exportStatement.declaration = exportStatement.declaration.arguments[0];
+
+  ast.program.body.push(
+    parse(templateIdentifier + '.customEvents=' + JSON.stringify(customEvents))
+      .program.body[0]
+  );
 
   return prettyPrint(ast, { tabWidth: 2 }).code;
 }

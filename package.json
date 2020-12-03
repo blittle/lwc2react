@@ -9,6 +9,7 @@
     "format": "prettier --write '**/*.{js,json}' '!{node_modules,packages}/**' '!package*.json' && lerna run format",
     "lint": "lerna run lint",
     "test": "lerna run test",
+    "test:update": "lerna run test:update",
     "version": "rm -f ./packages/**/CHANGELOG.md && npm run format",
     "postinstall": "lerna bootstrap --force-local",
     "start": "lerna run serve"

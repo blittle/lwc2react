@@ -29,7 +29,7 @@ export default {
     commonjs(),
     replace({ 'process.env.NODE_ENV': JSON.stringify(env) }),
     lwc2react({
-      debug: 'searchBar.js', // change to a string to output a specific file for debugging
+      debug: 'header.js', // change to a string to output a specific file for debugging
       include: '**/modules/my/**',
     }),
     visualizer({

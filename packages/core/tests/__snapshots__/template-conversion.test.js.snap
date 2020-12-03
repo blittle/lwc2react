@@ -18,7 +18,9 @@ if (_implicitStylesheets) {
 tmpl.stylesheetTokens = {
   hostAttribute: \\"my-test_test-host\\",
   shadowAttribute: \\"my-test_test\\"
-};"
+};
+
+tmpl.customEvents = [];"
 `;
 
 exports[`templates should compile class attributes 1`] = `
@@ -44,7 +46,9 @@ if (_implicitStylesheets) {
 tmpl.stylesheetTokens = {
   hostAttribute: \\"my-test_test-host\\",
   shadowAttribute: \\"my-test_test\\"
-};"
+};
+
+tmpl.customEvents = [];"
 `;
 
 exports[`templates should compile complex heirarchy with attributes 1`] = `
@@ -87,7 +91,9 @@ if (_implicitStylesheets) {
 tmpl.stylesheetTokens = {
   hostAttribute: \\"my-test_test-host\\",
   shadowAttribute: \\"my-test_test\\"
-};"
+};
+
+tmpl.customEvents = [];"
 `;
 
 exports[`templates should compile conditional blocks and expressions 1`] = `
@@ -106,7 +112,10 @@ class ProductImage extends React.Component {
       }
     });
 
-    this.__s = membrane.getProxy({});
+    this.__s = membrane.getProxy({
+      change: this.change
+    });
+
     this.template = React.createRef();
     this.__s.someValue = 1;
   }
@@ -144,6 +153,13 @@ class ProductImage extends React.Component {
       document.head.appendChild(sheet);
       this.stylesheets.push(sheet);
     });
+
+    _tmpl.customEvents.forEach(event => {
+      const name = event[0];
+      const ref = event[1];
+      this[ref] = this[ref].bind(this);
+      this.template.current.addEventListener(name, this[ref]);
+    });
   }
 
   componentWillUnmount() {
@@ -152,6 +168,12 @@ class ProductImage extends React.Component {
     this.stylesheets.forEach(sheet => {
       if (sheet.parentNode)
         sheet.parentNode.removeChild(sheet);
+    });
+
+    _tmpl.customEvents.forEach(event => {
+      const name = event[0];
+      const ref = event[1];
+      this.template.current.removeEventListener(name, this[ref]);
     });
   }
 }
@@ -181,7 +203,9 @@ if (_implicitStylesheets) {
 tmpl.stylesheetTokens = {
   hostAttribute: \\"my-test_test-host\\",
   shadowAttribute: \\"my-test_test\\"
-};"
+};
+
+tmpl.customEvents = [];"
 `;
 
 exports[`templates should compile for loops 1`] = `
@@ -200,7 +224,10 @@ class ProductImage extends React.Component {
       }
     });
 
-    this.__s = membrane.getProxy({});
+    this.__s = membrane.getProxy({
+      change: this.change
+    });
+
     this.template = React.createRef();
     this.__s.someValue = 1;
   }
@@ -232,6 +259,13 @@ class ProductImage extends React.Component {
       document.head.appendChild(sheet);
       this.stylesheets.push(sheet);
     });
+
+    _tmpl.customEvents.forEach(event => {
+      const name = event[0];
+      const ref = event[1];
+      this[ref] = this[ref].bind(this);
+      this.template.current.addEventListener(name, this[ref]);
+    });
   }
 
   componentWillUnmount() {
@@ -240,6 +274,12 @@ class ProductImage extends React.Component {
     this.stylesheets.forEach(sheet => {
       if (sheet.parentNode)
         sheet.parentNode.removeChild(sheet);
+    });
+
+    _tmpl.customEvents.forEach(event => {
+      const name = event[0];
+      const ref = event[1];
+      this.template.current.removeEventListener(name, this[ref]);
     });
   }
 }
@@ -272,7 +312,9 @@ if (_implicitStylesheets) {
 tmpl.stylesheetTokens = {
   hostAttribute: \\"my-app_app-host\\",
   shadowAttribute: \\"my-app_app\\"
-};"
+};
+
+tmpl.customEvents = [];"
 `;
 
 exports[`templates should compile for:each directives with dynamic attributes 1`] = `
@@ -306,7 +348,9 @@ if (_implicitStylesheets) {
 tmpl.stylesheetTokens = {
   hostAttribute: \\"my-app_app-host\\",
   shadowAttribute: \\"my-app_app\\"
-};"
+};
+
+tmpl.customEvents = [];"
 `;
 
 exports[`templates should compile forof loops 1`] = `
@@ -325,7 +369,10 @@ class ProductImage extends React.Component {
       }
     });
 
-    this.__s = membrane.getProxy({});
+    this.__s = membrane.getProxy({
+      change: this.change
+    });
+
     this.template = React.createRef();
     this.__s.arr = [1, 2];
   }
@@ -357,6 +404,13 @@ class ProductImage extends React.Component {
       document.head.appendChild(sheet);
       this.stylesheets.push(sheet);
     });
+
+    _tmpl.customEvents.forEach(event => {
+      const name = event[0];
+      const ref = event[1];
+      this[ref] = this[ref].bind(this);
+      this.template.current.addEventListener(name, this[ref]);
+    });
   }
 
   componentWillUnmount() {
@@ -365,6 +419,12 @@ class ProductImage extends React.Component {
     this.stylesheets.forEach(sheet => {
       if (sheet.parentNode)
         sheet.parentNode.removeChild(sheet);
+    });
+
+    _tmpl.customEvents.forEach(event => {
+      const name = event[0];
+      const ref = event[1];
+      this.template.current.removeEventListener(name, this[ref]);
     });
   }
 }
@@ -395,7 +455,9 @@ if (_implicitStylesheets) {
 tmpl.stylesheetTokens = {
   hostAttribute: \\"my-test_test-host\\",
   shadowAttribute: \\"my-test_test\\"
-};"
+};
+
+tmpl.customEvents = [];"
 `;
 
 exports[`templates should compile if:true directives 1`] = `
@@ -422,7 +484,9 @@ if (_implicitStylesheets) {
 tmpl.stylesheetTokens = {
   hostAttribute: \\"my-app_app-host\\",
   shadowAttribute: \\"my-app_app\\"
-};"
+};
+
+tmpl.customEvents = [];"
 `;
 
 exports[`templates should compile multiple nested divs with text 1`] = `
@@ -453,7 +517,9 @@ if (_implicitStylesheets) {
 tmpl.stylesheetTokens = {
   hostAttribute: \\"my-test_test-host\\",
   shadowAttribute: \\"my-test_test\\"
-};"
+};
+
+tmpl.customEvents = [];"
 `;
 
 exports[`templates should compile style attributes 1`] = `
@@ -482,7 +548,9 @@ if (_implicitStylesheets) {
 tmpl.stylesheetTokens = {
   hostAttribute: \\"my-test_test-host\\",
   shadowAttribute: \\"my-test_test\\"
-};"
+};
+
+tmpl.customEvents = [];"
 `;
 
 exports[`templates should compile the lwc class into a react class that renders the template 1`] = `
@@ -512,6 +580,13 @@ class Test extends React.Component {
       document.head.appendChild(sheet);
       this.stylesheets.push(sheet);
     });
+
+    _tmpl.customEvents.forEach(event => {
+      const name = event[0];
+      const ref = event[1];
+      this[ref] = this[ref].bind(this);
+      this.template.current.addEventListener(name, this[ref]);
+    });
   }
 
   componentWillUnmount() {
@@ -520,6 +595,12 @@ class Test extends React.Component {
     this.stylesheets.forEach(sheet => {
       if (sheet.parentNode)
         sheet.parentNode.removeChild(sheet);
+    });
+
+    _tmpl.customEvents.forEach(event => {
+      const name = event[0];
+      const ref = event[1];
+      this.template.current.removeEventListener(name, this[ref]);
     });
   }
 }
@@ -550,7 +631,9 @@ if (_implicitStylesheets) {
 tmpl.stylesheetTokens = {
   hostAttribute: \\"my-app_app-host\\",
   shadowAttribute: \\"my-app_app\\"
-};"
+};
+
+tmpl.customEvents = [];"
 `;
 
 exports[`templates should generate the proper template with api bound props 1`] = `
@@ -575,5 +658,7 @@ if (_implicitStylesheets) {
 tmpl.stylesheetTokens = {
   hostAttribute: \\"my-product_product-host\\",
   shadowAttribute: \\"my-product_product\\"
-};"
+};
+
+tmpl.customEvents = [];"
 `;
