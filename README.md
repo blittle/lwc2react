@@ -11,10 +11,10 @@ What is working:
 1. slots (named and anonymous)
 1. lifecycle methods
 1. Form and input events
+1. Custom events (from within templates)
 
 What is not working:
 
-1. Custom events
 1. Wire adapters
 
 
