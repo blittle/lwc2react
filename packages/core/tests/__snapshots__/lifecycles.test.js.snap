@@ -16,9 +16,11 @@ class Test extends React.Component {
       }
     });
 
-    this.__s = membrane.getProxy({
-      connectedCallback: this.connectedCallback
-    });
+    if (!this.__s) {
+      this.__s = membrane.getProxy({
+        connectedCallback: this.connectedCallback
+      });
+    }
 
     this.template = React.createRef();
     this.__s.a = 1;
@@ -93,9 +95,11 @@ class Test extends React.Component {
       }
     });
 
-    this.__s = membrane.getProxy({
-      disconnectedCallback: this.disconnectedCallback
-    });
+    if (!this.__s) {
+      this.__s = membrane.getProxy({
+        disconnectedCallback: this.disconnectedCallback
+      });
+    }
 
     this.template = React.createRef();
     this.__s.a = 1;
@@ -170,9 +174,11 @@ class Test extends React.Component {
       }
     });
 
-    this.__s = membrane.getProxy({
-      errorCallback: this.errorCallback
-    });
+    if (!this.__s) {
+      this.__s = membrane.getProxy({
+        errorCallback: this.errorCallback
+      });
+    }
 
     this.template = React.createRef();
     this.__s.a = 1;
@@ -249,9 +255,11 @@ class Test extends React.Component {
       }
     });
 
-    this.__s = membrane.getProxy({
-      renderedCallback: this.renderedCallback
-    });
+    if (!this.__s) {
+      this.__s = membrane.getProxy({
+        renderedCallback: this.renderedCallback
+      });
+    }
 
     this.template = React.createRef();
     this.__s.a = 1;

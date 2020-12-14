@@ -9,6 +9,7 @@
     "format": "prettier --write '**/*.{js,json}' '!{node_modules,lib,coverage}/**' '!package*.json'",
     "lint": "eslint '**/*.js'",
     "test": "jest --verbose --coverage",
+    "test:watch": "jest --verbose --watch",
     "test:update": "jest -u"
   },
   "author": "Bret Little",

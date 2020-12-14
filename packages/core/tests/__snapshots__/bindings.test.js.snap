@@ -16,9 +16,11 @@ class Test extends React.Component {
       }
     });
 
-    this.__s = membrane.getProxy({
-      setA: this.setA
-    });
+    if (!this.__s) {
+      this.__s = membrane.getProxy({
+        setA: this.setA
+      });
+    }
 
     this.template = React.createRef();
     this.__s.a = 1;
@@ -93,9 +95,11 @@ class Test extends React.Component {
       }
     });
 
-    this.__s = membrane.getProxy({
-      setA: this.setA
-    });
+    if (!this.__s) {
+      this.__s = membrane.getProxy({
+        setA: this.setA
+      });
+    }
 
     this.template = React.createRef();
     this.__s.a = 1;
@@ -170,7 +174,10 @@ class App extends React.Component {
       }
     });
 
-    this.__s = membrane.getProxy({});
+    if (!this.__s) {
+      this.__s = membrane.getProxy({});
+    }
+
     this.template = React.createRef();
     this.__s.publicProp = void 0;
   }
@@ -240,7 +247,10 @@ class App extends React.Component {
       }
     });
 
-    this.__s = membrane.getProxy({});
+    if (!this.__s) {
+      this.__s = membrane.getProxy({});
+    }
+
     this.template = React.createRef();
     this.__s.publicProp = \\"some default\\";
   }
@@ -310,7 +320,10 @@ class ProductImage extends React.Component {
       }
     });
 
-    this.__s = membrane.getProxy({});
+    if (!this.__s) {
+      this.__s = membrane.getProxy({});
+    }
+
     this.template = React.createRef();
     this.__s.imageUrl = void 0;
     this.__s.productName = \\"name\\";
@@ -393,9 +406,11 @@ class App extends React.Component {
       }
     });
 
-    this.__s = membrane.getProxy({
-      doSomething: this.doSomething
-    });
+    if (!this.__s) {
+      this.__s = membrane.getProxy({
+        doSomething: this.doSomething
+      });
+    }
 
     this.template = React.createRef();
     this.__s.wow = \\"hi2\\";

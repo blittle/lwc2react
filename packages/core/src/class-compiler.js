@@ -5,10 +5,21 @@ const b = types.builders;
 const n = types.namedTypes;
 
 function getClassAST(ast) {
-  return ast.program.body.find(
-    (element) =>
-      n.ClassDeclaration.check(element) &&
-      element.superClass.name === 'LightningElement'
+  const exportStatement = ast.program.body.find((el) =>
+    n.ExportDefaultDeclaration.check(el)
+  );
+  const exportName = (exportStatement?.declaration?.arguments || [])[0]?.name;
+
+  return (
+    ast.program.body.find(
+      (element) =>
+        n.ClassDeclaration.check(element) &&
+        element.superClass.name === 'LightningElement'
+    ) ||
+    ast.program.body.find(
+      (element) =>
+        n.ClassDeclaration.check(element) && element.id.name === exportName
+    )
   );
 }
 
@@ -33,7 +44,11 @@ function getClassMethods(classAST) {
 
 function convertClass(classAST, publicProps, templateIdentifier) {
   const classMethods = getClassMethods(classAST);
-  classAST.superClass = b.identifier('React.Component');
+
+  if (classAST.superClass.name === 'LightningElement') {
+    classAST.superClass = b.identifier('React.Component');
+  }
+
   convertMethods(classAST, publicProps, classMethods);
   buildRenderMethod(classAST, templateIdentifier);
   buildStyles(classAST, templateIdentifier);
@@ -60,9 +75,11 @@ function convertConstructorBlock(classAST, publicProps, classMethods) {
         }
       });
 
-      this.__s = membrane.getProxy({
-        ${classMethods.map((method) => `${method}: this.${method}`)}
-      });
+      if (!this.__s) {
+        this.__s = membrane.getProxy({
+          ${classMethods.map((method) => `${method}: this.${method}`)}
+        });
+      }
       this.template = React.createRef();
     `);
 
@@ -191,9 +208,11 @@ function processCallExpression(callExpression, options) {
 
     if (
       n.ThisExpression.check(member.object) &&
-      ![...options.classMethods, 'template'].includes(member.property.name)
+      !options.classMethods.includes(member.property.name)
     ) {
-      if (
+      if (member.property.name === 'template') {
+        member.property.name = 'template.current';
+      } else if (
         member.property.name === 'dispatchEvent' ||
         member.property.name === 'addEventListener' ||
         member.property.name === 'removeEventListener'
@@ -207,6 +226,17 @@ function processCallExpression(callExpression, options) {
           options
         );
       }
+    }
+
+    const lifeCycleMap = {
+      renderedCallback: 'componentDidUpdate',
+      connectedCallback: 'componentDidMount',
+      errorCallback: 'componentDidCatch',
+      disconnectedCallback: 'componentWillUnmount',
+    };
+
+    if (lifeCycleMap.hasOwnProperty(member.property.name)) {
+      member.property.name = lifeCycleMap[member.property.name];
     }
   }
 
@@ -244,6 +274,10 @@ function processExpression(expression, options) {
       expression.object = processExpression(expression.object, options);
       return expression;
     }
+  }
+
+  if (n.CallExpression.check(expression)) {
+    return processCallExpression({ expression }, options).expression;
   }
 
   if (n.UpdateExpression.check(expression)) {

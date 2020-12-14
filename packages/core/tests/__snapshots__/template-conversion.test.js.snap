@@ -112,9 +112,11 @@ class ProductImage extends React.Component {
       }
     });
 
-    this.__s = membrane.getProxy({
-      change: this.change
-    });
+    if (!this.__s) {
+      this.__s = membrane.getProxy({
+        change: this.change
+      });
+    }
 
     this.template = React.createRef();
     this.__s.someValue = 1;
@@ -224,9 +226,11 @@ class ProductImage extends React.Component {
       }
     });
 
-    this.__s = membrane.getProxy({
-      change: this.change
-    });
+    if (!this.__s) {
+      this.__s = membrane.getProxy({
+        change: this.change
+      });
+    }
 
     this.template = React.createRef();
     this.__s.someValue = 1;
@@ -369,9 +373,11 @@ class ProductImage extends React.Component {
       }
     });
 
-    this.__s = membrane.getProxy({
-      change: this.change
-    });
+    if (!this.__s) {
+      this.__s = membrane.getProxy({
+        change: this.change
+      });
+    }
 
     this.template = React.createRef();
     this.__s.arr = [1, 2];

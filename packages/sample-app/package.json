@@ -30,7 +30,9 @@
   "dependencies": {
     "@lwce/router": "0.0.2",
     "lwc": "^1.4.0-alpha3",
+    "lwc-components-lightning": "^1.11.1-alpha",
     "react": "^16.13.1",
-    "react-dom": "^16.13.1"
+    "react-dom": "^16.13.1",
+    "ui-lightning-community": "^230.51.0"
   }
 }

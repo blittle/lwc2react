@@ -53,13 +53,15 @@ class SearchBar extends React.Component {
       }
     });
 
-    this.__s = membrane.getProxy({
-      performSearch: this.performSearch
-    });
+    if (!this.__s) {
+      this.__s = membrane.getProxy({
+        performSearch: this.performSearch
+      });
+    }
 
     this.template = React.createRef();
     this.__s.query = \\"\\";
-    this.template.addEventListener(\\"something\\", this.__s.performSearch);
+    this.template.current.addEventListener(\\"something\\", this.__s.performSearch);
     this.template.current.addEventListener(\\"something\\", this.__s.performSearch);
   }
 
@@ -162,9 +164,11 @@ class SearchBar extends React.Component {
       }
     });
 
-    this.__s = membrane.getProxy({
-      performSearch: this.performSearch
-    });
+    if (!this.__s) {
+      this.__s = membrane.getProxy({
+        performSearch: this.performSearch
+      });
+    }
 
     this.template = React.createRef();
     this.__s.query = \\"\\";
@@ -244,16 +248,18 @@ class SearchBar extends React.Component {
       }
     });
 
-    this.__s = membrane.getProxy({
-      performSearch: this.performSearch
-    });
+    if (!this.__s) {
+      this.__s = membrane.getProxy({
+        performSearch: this.performSearch
+      });
+    }
 
     this.template = React.createRef();
     this.__s.query = \\"\\";
   }
 
   performSearch() {
-    this.template.dispatchEvent(new CustomEvent(\\"someevent\\", {
+    this.template.current.dispatchEvent(new CustomEvent(\\"someevent\\", {
       detail: this.query
     }));
   }

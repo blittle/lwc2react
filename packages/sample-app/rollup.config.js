@@ -13,8 +13,8 @@ const env = process.env.NODE_ENV || 'development';
 export default {
   input,
   output: {
-    format: 'iife',
-    file: path.join(outputDir, 'app.js'),
+    format: 'esm',
+    dir: outputDir,
   },
   plugins: [
     resolve(),
@@ -24,13 +24,19 @@ export default {
         {
           dir: 'modules',
         },
+        {
+          npm: 'ui-lightning-community',
+        },
+        {
+          npm: 'lwc-components-lightning',
+        },
       ],
     }),
     commonjs(),
     replace({ 'process.env.NODE_ENV': JSON.stringify(env) }),
     lwc2react({
-      debug: 'header.js', // change to a string to output a specific file for debugging
-      include: '**/modules/my/**',
+      debug: 'lightning/button', // change to a string to output a specific file for debugging
+      include: ['**/modules/my/**', '*/**/lwc-components-lightning/**/*'],
     }),
     visualizer({
       filename: 'src/dist/stats.html',
