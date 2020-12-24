@@ -46,17 +46,27 @@ function convertClass(classAST, publicProps, templateIdentifier) {
   const classMethods = getClassMethods(classAST);
 
   if (classAST.superClass.name === 'LightningElement') {
-    classAST.superClass = b.identifier('React.Component');
+    classAST.superClass = b.identifier('LightningComponent');
   }
 
   convertMethods(classAST, publicProps, classMethods);
   buildRenderMethod(classAST, templateIdentifier);
   buildStyles(classAST, templateIdentifier);
-  convertConstructorBlock(classAST, publicProps, classMethods);
+  convertConstructorBlock(
+    classAST,
+    publicProps,
+    classMethods,
+    templateIdentifier
+  );
   convertLifeCycleMethods(classAST);
 }
 
-function convertConstructorBlock(classAST, publicProps, classMethods) {
+function convertConstructorBlock(
+  classAST,
+  publicProps,
+  classMethods,
+  templateIdentifier
+) {
   const constructorAST = classAST.body.body.find(
     (prop) => prop.kind === 'constructor'
   );
@@ -68,30 +78,28 @@ function convertConstructorBlock(classAST, publicProps, classMethods) {
       classMethods,
     });
 
-    const setup = parse(`
-      const membrane = new ObservableMembrane({
-        valueMutated: () => {
-          if (this.mounted) this.forceUpdate()
+    constructorAST.value.body.body[0].expression.arguments = [
+      b.identifier(templateIdentifier),
+    ];
+  } else {
+    const a = parse(`
+      class A {
+        constructor() {
+          super(${templateIdentifier});
         }
-      });
-
-      if (!this.__s) {
-        this.__s = membrane.getProxy({
-          ${classMethods.map((method) => `${method}: this.${method}`)}
-        });
       }
-      this.template = React.createRef();
-    `);
+    `).program.body[0].body.body[0];
 
-    // initialize empty state
-    constructorAST.value.body.body.splice(1, 0, ...setup.program.body);
+    classAST.body.body.unshift(a);
   }
 }
 
 function buildRenderMethod(classAST, templateIdentifier) {
   // maybe extending `this` like this is not okay?
   const render = parse(`function render() {
-    return ${templateIdentifier}(Object.assign(this, this.props, this.__s))
+    const prox = Object.assign({}, this, this.__s);
+    prox.__proto__ = this.__proto__;
+    return ${templateIdentifier}(prox);
   }`);
   classAST.body.body.push(
     b.methodDefinition(
@@ -196,15 +204,18 @@ function processReturnStatement(returnStatement, options) {
 
 function getTopOfMemberExpression(memberExpression) {
   if (n.MemberExpression.check(memberExpression.object)) {
-    return getTopOfMemberExpression(memberExpression.object);
+    return [
+      ...getTopOfMemberExpression(memberExpression.object),
+      memberExpression,
+    ];
   } else {
-    return memberExpression;
+    return [memberExpression];
   }
 }
 
 function processCallExpression(callExpression, options) {
   if (n.MemberExpression.check(callExpression.expression.callee)) {
-    const member = getTopOfMemberExpression(callExpression.expression.callee);
+    const [member] = getTopOfMemberExpression(callExpression.expression.callee);
 
     if (
       n.ThisExpression.check(member.object) &&
@@ -213,9 +224,9 @@ function processCallExpression(callExpression, options) {
       if (member.property.name === 'template') {
         member.property.name = 'template.current';
       } else if (
-        member.property.name === 'dispatchEvent' ||
         member.property.name === 'addEventListener' ||
-        member.property.name === 'removeEventListener'
+        member.property.name === 'removeEventListener' ||
+        member.property.name === 'dispatchEvent'
       ) {
         callExpression.expression.callee = b.identifier(
           'this.template.current.' + member.property.name
@@ -268,7 +279,17 @@ function processVariableDeclaration(element, options) {
 
 function processExpression(expression, options) {
   if (n.MemberExpression.check(expression)) {
-    if (n.ThisExpression.check(expression.object)) {
+    let [top, next, ...rest] = getTopOfMemberExpression(expression);
+
+    if (top.property.name === 'template') {
+      if (next.property.name !== 'host') {
+        // only add member if it is not "host"
+        rest = [next, ...rest];
+      }
+      return b.identifier(
+        `this.template.current.${rest.map((e) => e.property.name).join('.')}`
+      );
+    } else if (n.ThisExpression.check(expression.object)) {
       return b.identifier(`this.__s.${expression.property.name}`);
     } else if (n.MemberExpression.check(expression.object)) {
       expression.object = processExpression(expression.object, options);
@@ -289,10 +310,19 @@ function processExpression(expression, options) {
     expression.left = processExpression(expression.left, options);
     expression.right = processExpression(expression.right, options);
     return expression;
-  } else if (n.ConditionalExpression.check(expression)) {
+  }
+
+  if (n.ConditionalExpression.check(expression)) {
     expression.test = processExpression(expression.test, options);
     expression.consequent = processExpression(expression.consequent, options);
     expression.alternate = processExpression(expression.alternate, options);
+  }
+
+  if (n.ObjectExpression.check(expression)) {
+    expression.properties.forEach((property) => {
+      property.key = processExpression(property.key);
+      property.value = processExpression(property.value);
+    });
   }
 
   return expression;
@@ -363,64 +393,23 @@ function processElement(element, options) {
 }
 
 function buildStyles(classAST, templateIdentifier) {
-  const didMountText = parse(`
-    this.mounted = true;
-    this.stylesheets = [];
-    ${templateIdentifier}.stylesheets.forEach(stylesheet => {
-        const sheet = document.createElement("style");
-        sheet.type = "text/css";
-        sheet.textContent = stylesheet(
-          "[" + ${templateIdentifier}.stylesheetTokens.hostAttribute.toLowerCase() + "]",
-          "[" + ${templateIdentifier}.stylesheetTokens.shadowAttribute.toLowerCase() + "]",
-           null
-        );
-        document.head.appendChild(sheet);
-        this.stylesheets.push(sheet);
-    })
-
-    ${templateIdentifier}.customEvents.forEach(event => {
-      const name = event[0];
-      const ref = event[1];
-      this[ref] = this[ref].bind(this);
-      this.template.current.addEventListener(name, this[ref]);
-    });
-  `);
-
-  const willUnmountText = parse(`
-    this.mounted = false;
-    this.stylesheets.forEach(sheet => {
-      if (sheet.parentNode) sheet.parentNode.removeChild(sheet);
-    })
-
-    ${templateIdentifier}.customEvents.forEach(event => {
-      const name = event[0];
-      const ref = event[1];
-      this.template.current.removeEventListener(name, this[ref]);
-    });
+  const classBuilder = parse(`
+    class A{
+      componentDidMount() {
+        super.componentDidMount(${templateIdentifier});
+      }
+      componentWillUnmount() {
+        super.componentWillUnmount(${templateIdentifier});
+      }
+    }
   `);
 
   classAST.body.body.push(
-    b.methodDefinition(
-      'method',
-      b.identifier('componentDidMount'),
-      b.functionExpression(
-        b.identifier('componentDidMount'),
-        [],
-        b.blockStatement(didMountText.program.body)
-      )
-    )
+    classBuilder.program.body[0].body.body[0] // componentDidMount
   );
 
   classAST.body.body.push(
-    b.methodDefinition(
-      'method',
-      b.identifier('componentWillUnmount'),
-      b.functionExpression(
-        b.identifier('componentWillUnmount'),
-        [],
-        b.blockStatement(willUnmountText.program.body)
-      )
-    )
+    classBuilder.program.body[0].body.body[1] // componentWillUnmount
   );
 }
 
@@ -464,6 +453,11 @@ export function compileClass(ast) {
     ast.program.body.unshift(
       parse("import ObservableMembrane from 'observable-membrane'").program
         .body[0]
+    );
+
+    ast.program.body.unshift(
+      parse("import LightningComponent from 'lwc2react/lib/LightningComponent'")
+        .program.body[0]
     );
 
     const exportStatement = ast.program.body.find((el) =>

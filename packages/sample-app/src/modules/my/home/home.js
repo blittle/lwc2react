@@ -5,8 +5,11 @@ import { test } from './test';
  * Homepage component. Renders homepage content.
  */
 class Home extends LightningElement {
-  wow() {
-    alert(test());
+  wowA() {
+    alert(test() + 'A');
+  }
+  wowB() {
+    alert(test() + 'B');
   }
 }
 

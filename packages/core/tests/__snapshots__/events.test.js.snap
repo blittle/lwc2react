@@ -15,7 +15,7 @@ function tmpl($cmp) {
   }, $cmp.something), React.createElement(\\"button\\", {
     [tmpl.stylesheetTokens.shadowAttribute.toLowerCase()]: \\"true\\",
     key: 1,
-    onClick: $cmp.increment.bind($cmp)
+    ref: $cmp.__ref1
   }, \\"increment\\")]);
 }
 
@@ -31,35 +31,21 @@ tmpl.stylesheetTokens = {
   shadowAttribute: \\"my-app_app\\"
 };
 
-tmpl.customEvents = [];"
+tmpl.customEvents = [[\\"click\\", \\"increment\\", \\"__ref1\\"]];"
 `;
 
 exports[`Events should add event listeners to ref 1`] = `
-"import ObservableMembrane from \\"observable-membrane\\";
+"import LightningComponent from \\"lwc2react/lib/LightningComponent\\";
+import ObservableMembrane from \\"observable-membrane\\";
 import React from \\"react\\";
 import _tmpl from \\"./searchBar.html\\";
 
 /**
  * Search Bar where visitors can search for stuff
  */
-class SearchBar extends React.Component {
+class SearchBar extends LightningComponent {
   constructor(...args) {
-    super(...args);
-
-    const membrane = new ObservableMembrane({
-      valueMutated: () => {
-        if (this.mounted)
-          this.forceUpdate();
-      }
-    });
-
-    if (!this.__s) {
-      this.__s = membrane.getProxy({
-        performSearch: this.performSearch
-      });
-    }
-
-    this.template = React.createRef();
+    super(_tmpl);
     this.__s.query = \\"\\";
     this.template.current.addEventListener(\\"something\\", this.__s.performSearch);
     this.template.current.addEventListener(\\"something\\", this.__s.performSearch);
@@ -68,48 +54,17 @@ class SearchBar extends React.Component {
   performSearch() {}
 
   render() {
-    return _tmpl(Object.assign(this, this.props, this.__s));
+    const prox = Object.assign({}, this, this.__s);
+    prox.__proto__ = this.__proto__;
+    return _tmpl(prox);
   }
 
   componentDidMount() {
-    this.mounted = true;
-    this.stylesheets = [];
-
-    _tmpl.stylesheets.forEach(stylesheet => {
-      const sheet = document.createElement(\\"style\\");
-      sheet.type = \\"text/css\\";
-
-      sheet.textContent = stylesheet(
-        \\"[\\" + _tmpl.stylesheetTokens.hostAttribute.toLowerCase() + \\"]\\",
-        \\"[\\" + _tmpl.stylesheetTokens.shadowAttribute.toLowerCase() + \\"]\\",
-        null
-      );
-
-      document.head.appendChild(sheet);
-      this.stylesheets.push(sheet);
-    });
-
-    _tmpl.customEvents.forEach(event => {
-      const name = event[0];
-      const ref = event[1];
-      this[ref] = this[ref].bind(this);
-      this.template.current.addEventListener(name, this[ref]);
-    });
+    super.componentDidMount(_tmpl);
   }
 
   componentWillUnmount() {
-    this.mounted = false;
-
-    this.stylesheets.forEach(sheet => {
-      if (sheet.parentNode)
-        sheet.parentNode.removeChild(sheet);
-    });
-
-    _tmpl.customEvents.forEach(event => {
-      const name = event[0];
-      const ref = event[1];
-      this.template.current.removeEventListener(name, this[ref]);
-    });
+    super.componentWillUnmount(_tmpl);
   }
 }
 
@@ -125,6 +80,7 @@ function tmpl($cmp) {
   return React.createElement(_mySearchBar, {
     [tmpl.stylesheetTokens.shadowAttribute.toLowerCase()]: \\"true\\",
     key: 0,
+    ref: $cmp.template,
     ref: $cmp.template,
     \\"query\\": $cmp.query
   }, null);
@@ -142,35 +98,21 @@ tmpl.stylesheetTokens = {
   shadowAttribute: \\"my-header_header\\"
 };
 
-tmpl.customEvents = [[\\"search\\", \\"updateQuery\\"]];"
+tmpl.customEvents = [[\\"search\\", \\"updateQuery\\", \\"template\\"]];"
 `;
 
 exports[`Events should dispatch custom events from the component ref 1`] = `
-"import ObservableMembrane from \\"observable-membrane\\";
+"import LightningComponent from \\"lwc2react/lib/LightningComponent\\";
+import ObservableMembrane from \\"observable-membrane\\";
 import React from \\"react\\";
 import _tmpl from \\"./searchBar.html\\";
 
 /**
  * Search Bar where visitors can search for stuff
  */
-class SearchBar extends React.Component {
+class SearchBar extends LightningComponent {
   constructor(...args) {
-    super(...args);
-
-    const membrane = new ObservableMembrane({
-      valueMutated: () => {
-        if (this.mounted)
-          this.forceUpdate();
-      }
-    });
-
-    if (!this.__s) {
-      this.__s = membrane.getProxy({
-        performSearch: this.performSearch
-      });
-    }
-
-    this.template = React.createRef();
+    super(_tmpl);
     this.__s.query = \\"\\";
   }
 
@@ -181,48 +123,17 @@ class SearchBar extends React.Component {
   }
 
   render() {
-    return _tmpl(Object.assign(this, this.props, this.__s));
+    const prox = Object.assign({}, this, this.__s);
+    prox.__proto__ = this.__proto__;
+    return _tmpl(prox);
   }
 
   componentDidMount() {
-    this.mounted = true;
-    this.stylesheets = [];
-
-    _tmpl.stylesheets.forEach(stylesheet => {
-      const sheet = document.createElement(\\"style\\");
-      sheet.type = \\"text/css\\";
-
-      sheet.textContent = stylesheet(
-        \\"[\\" + _tmpl.stylesheetTokens.hostAttribute.toLowerCase() + \\"]\\",
-        \\"[\\" + _tmpl.stylesheetTokens.shadowAttribute.toLowerCase() + \\"]\\",
-        null
-      );
-
-      document.head.appendChild(sheet);
-      this.stylesheets.push(sheet);
-    });
-
-    _tmpl.customEvents.forEach(event => {
-      const name = event[0];
-      const ref = event[1];
-      this[ref] = this[ref].bind(this);
-      this.template.current.addEventListener(name, this[ref]);
-    });
+    super.componentDidMount(_tmpl);
   }
 
   componentWillUnmount() {
-    this.mounted = false;
-
-    this.stylesheets.forEach(sheet => {
-      if (sheet.parentNode)
-        sheet.parentNode.removeChild(sheet);
-    });
-
-    _tmpl.customEvents.forEach(event => {
-      const name = event[0];
-      const ref = event[1];
-      this.template.current.removeEventListener(name, this[ref]);
-    });
+    super.componentWillUnmount(_tmpl);
   }
 }
 
@@ -230,31 +141,17 @@ export default SearchBar;"
 `;
 
 exports[`Events should dispatch custom events from the template 1`] = `
-"import ObservableMembrane from \\"observable-membrane\\";
+"import LightningComponent from \\"lwc2react/lib/LightningComponent\\";
+import ObservableMembrane from \\"observable-membrane\\";
 import React from \\"react\\";
 import _tmpl from \\"./searchBar.html\\";
 
 /**
  * Search Bar where visitors can search for stuff
  */
-class SearchBar extends React.Component {
+class SearchBar extends LightningComponent {
   constructor(...args) {
-    super(...args);
-
-    const membrane = new ObservableMembrane({
-      valueMutated: () => {
-        if (this.mounted)
-          this.forceUpdate();
-      }
-    });
-
-    if (!this.__s) {
-      this.__s = membrane.getProxy({
-        performSearch: this.performSearch
-      });
-    }
-
-    this.template = React.createRef();
+    super(_tmpl);
     this.__s.query = \\"\\";
   }
 
@@ -265,48 +162,17 @@ class SearchBar extends React.Component {
   }
 
   render() {
-    return _tmpl(Object.assign(this, this.props, this.__s));
+    const prox = Object.assign({}, this, this.__s);
+    prox.__proto__ = this.__proto__;
+    return _tmpl(prox);
   }
 
   componentDidMount() {
-    this.mounted = true;
-    this.stylesheets = [];
-
-    _tmpl.stylesheets.forEach(stylesheet => {
-      const sheet = document.createElement(\\"style\\");
-      sheet.type = \\"text/css\\";
-
-      sheet.textContent = stylesheet(
-        \\"[\\" + _tmpl.stylesheetTokens.hostAttribute.toLowerCase() + \\"]\\",
-        \\"[\\" + _tmpl.stylesheetTokens.shadowAttribute.toLowerCase() + \\"]\\",
-        null
-      );
-
-      document.head.appendChild(sheet);
-      this.stylesheets.push(sheet);
-    });
-
-    _tmpl.customEvents.forEach(event => {
-      const name = event[0];
-      const ref = event[1];
-      this[ref] = this[ref].bind(this);
-      this.template.current.addEventListener(name, this[ref]);
-    });
+    super.componentDidMount(_tmpl);
   }
 
   componentWillUnmount() {
-    this.mounted = false;
-
-    this.stylesheets.forEach(sheet => {
-      if (sheet.parentNode)
-        sheet.parentNode.removeChild(sheet);
-    });
-
-    _tmpl.customEvents.forEach(event => {
-      const name = event[0];
-      const ref = event[1];
-      this.template.current.removeEventListener(name, this[ref]);
-    });
+    super.componentWillUnmount(_tmpl);
   }
 }
 
@@ -330,8 +196,7 @@ function tmpl($cmp) {
   }, null), React.createElement(\\"input\\", {
     [tmpl.stylesheetTokens.shadowAttribute.toLowerCase()]: \\"true\\",
     key: 1,
-    onInput: $cmp.searchInputHandler.bind($cmp),
-    onKeyUp: $cmp.searchKeyUpHandler.bind($cmp),
+    ref: $cmp.__ref2,
     \\"value\\": $cmp.query,
     \\"autoFocus\\": true,
     \\"placeholder\\": \\"Search (keywords, brands, etc)\\",
@@ -340,7 +205,7 @@ function tmpl($cmp) {
   }, null), React.createElement(\\"i\\", {
     [tmpl.stylesheetTokens.shadowAttribute.toLowerCase()]: \\"true\\",
     key: 2,
-    onClick: $cmp.handleIconClick.bind($cmp),
+    ref: $cmp.__ref3,
     className: \\"fa fa-search\\"
   }, null)]);
 }
@@ -357,5 +222,9 @@ tmpl.stylesheetTokens = {
   shadowAttribute: \\"my-searchBar_searchBar\\"
 };
 
-tmpl.customEvents = [];"
+tmpl.customEvents = [
+  [\\"input\\", \\"searchInputHandler\\", \\"__ref2\\"],
+  [\\"keyup\\", \\"searchKeyUpHandler\\", \\"__ref2\\"],
+  [\\"click\\", \\"handleIconClick\\", \\"__ref3\\"]
+];"
 `;

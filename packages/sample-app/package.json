@@ -33,6 +33,7 @@
     "lwc-components-lightning": "^1.11.1-alpha",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
-    "ui-lightning-community": "^230.51.0"
+    "ui-lightning-community": "^230.51.0",
+    "observable-membrane": "1.0.1"
   }
 }

@@ -21,6 +21,13 @@
     "@rollup/pluginutils": "3.0.10",
     "recast": "0.19.1"
   },
+  "devDependencies": {
+    "lwc-components-lightning": "^1.11.1-alpha",
+    "ui-lightning-community": "^230.51.0",
+    "lwc": "^1.4.0-alpha3",
+    "react": "^16.13.1",
+    "observable-membrane": "1.0.1"
+  },
   "files": [
     "lib"
   ]

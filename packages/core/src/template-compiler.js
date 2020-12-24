@@ -1,9 +1,10 @@
 import { parse, types, prettyPrint } from 'recast';
 import { removeLWCCode } from './helpers';
-import { eventMap, attributeMap } from './dataMaps';
+import { attributeMap } from './dataMaps';
 
 const b = types.builders;
 const n = types.namedTypes;
+let refCounter = 0;
 
 function getTemplateAST(ast) {
   return ast.program.body.find(
@@ -234,30 +235,41 @@ function buildProps(
     props.push(buildKey(key));
   }
 
+  const hasEvents =
+    events &&
+    events.value &&
+    events.value.properties &&
+    events.value.properties.length;
+
   if (topOfTree) {
     props.push(
       b.objectProperty(b.identifier('ref'), b.identifier('$cmp.template'))
     );
   }
 
-  if (events) {
+  if (hasEvents) {
+    const refName = topOfTree ? 'template' : `__ref${++refCounter}`;
+
+    props.push(
+      b.objectProperty(b.identifier('ref'), b.identifier(`$cmp.${refName}`))
+    );
+
     events.value.properties.forEach((prop) => {
       const args = prop.value.right.right.arguments[0];
       if (args.object.name === '$cmp') {
-        if (eventMap['on' + prop.key.value]) {
-          // native event
-          props.push(
-            b.property(
-              'init',
-              b.identifier(eventMap['on' + prop.key.value] || prop.key.value),
-              parse(`$cmp.${args.property.name}.bind($cmp)`).program.body[0]
-                .expression
-            )
-          );
-        } else {
-          // custom event
-          customEvents.push([prop.key.value, args.property.name]);
-        }
+        //if (eventMap['on' + prop.key.value]) { // native event
+        //  props.push(
+        //    b.property(
+        //      'init',
+        //      b.identifier(eventMap['on' + prop.key.value] || prop.key.value),
+        //      parse(`$cmp.${args.property.name}.bind($cmp)`).program.body[0]
+        //        .expression
+        //    )
+        //  );
+        //} else {
+        // custom event
+        customEvents.push([prop.key.value, args.property.name, refName]);
+        //}
       } else {
         throw new Error('Unable to handle bound event: ' + prop.key.value);
       }

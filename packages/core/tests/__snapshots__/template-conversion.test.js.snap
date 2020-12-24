@@ -97,28 +97,14 @@ tmpl.customEvents = [];"
 `;
 
 exports[`templates should compile conditional blocks and expressions 1`] = `
-"import ObservableMembrane from \\"observable-membrane\\";
+"import LightningComponent from \\"lwc2react/lib/LightningComponent\\";
+import ObservableMembrane from \\"observable-membrane\\";
 import React from \\"react\\";
 import _tmpl from \\"./app.html\\";
 
-class ProductImage extends React.Component {
+class ProductImage extends LightningComponent {
   constructor(...args) {
-    super(...args);
-
-    const membrane = new ObservableMembrane({
-      valueMutated: () => {
-        if (this.mounted)
-          this.forceUpdate();
-      }
-    });
-
-    if (!this.__s) {
-      this.__s = membrane.getProxy({
-        change: this.change
-      });
-    }
-
-    this.template = React.createRef();
+    super(_tmpl);
     this.__s.someValue = 1;
   }
 
@@ -135,48 +121,17 @@ class ProductImage extends React.Component {
   }
 
   render() {
-    return _tmpl(Object.assign(this, this.props, this.__s));
+    const prox = Object.assign({}, this, this.__s);
+    prox.__proto__ = this.__proto__;
+    return _tmpl(prox);
   }
 
   componentDidMount() {
-    this.mounted = true;
-    this.stylesheets = [];
-
-    _tmpl.stylesheets.forEach(stylesheet => {
-      const sheet = document.createElement(\\"style\\");
-      sheet.type = \\"text/css\\";
-
-      sheet.textContent = stylesheet(
-        \\"[\\" + _tmpl.stylesheetTokens.hostAttribute.toLowerCase() + \\"]\\",
-        \\"[\\" + _tmpl.stylesheetTokens.shadowAttribute.toLowerCase() + \\"]\\",
-        null
-      );
-
-      document.head.appendChild(sheet);
-      this.stylesheets.push(sheet);
-    });
-
-    _tmpl.customEvents.forEach(event => {
-      const name = event[0];
-      const ref = event[1];
-      this[ref] = this[ref].bind(this);
-      this.template.current.addEventListener(name, this[ref]);
-    });
+    super.componentDidMount(_tmpl);
   }
 
   componentWillUnmount() {
-    this.mounted = false;
-
-    this.stylesheets.forEach(sheet => {
-      if (sheet.parentNode)
-        sheet.parentNode.removeChild(sheet);
-    });
-
-    _tmpl.customEvents.forEach(event => {
-      const name = event[0];
-      const ref = event[1];
-      this.template.current.removeEventListener(name, this[ref]);
-    });
+    super.componentWillUnmount(_tmpl);
   }
 }
 
@@ -211,28 +166,14 @@ tmpl.customEvents = [];"
 `;
 
 exports[`templates should compile for loops 1`] = `
-"import ObservableMembrane from \\"observable-membrane\\";
+"import LightningComponent from \\"lwc2react/lib/LightningComponent\\";
+import ObservableMembrane from \\"observable-membrane\\";
 import React from \\"react\\";
 import _tmpl from \\"./app.html\\";
 
-class ProductImage extends React.Component {
+class ProductImage extends LightningComponent {
   constructor(...args) {
-    super(...args);
-
-    const membrane = new ObservableMembrane({
-      valueMutated: () => {
-        if (this.mounted)
-          this.forceUpdate();
-      }
-    });
-
-    if (!this.__s) {
-      this.__s = membrane.getProxy({
-        change: this.change
-      });
-    }
-
-    this.template = React.createRef();
+    super(_tmpl);
     this.__s.someValue = 1;
   }
 
@@ -243,48 +184,17 @@ class ProductImage extends React.Component {
   }
 
   render() {
-    return _tmpl(Object.assign(this, this.props, this.__s));
+    const prox = Object.assign({}, this, this.__s);
+    prox.__proto__ = this.__proto__;
+    return _tmpl(prox);
   }
 
   componentDidMount() {
-    this.mounted = true;
-    this.stylesheets = [];
-
-    _tmpl.stylesheets.forEach(stylesheet => {
-      const sheet = document.createElement(\\"style\\");
-      sheet.type = \\"text/css\\";
-
-      sheet.textContent = stylesheet(
-        \\"[\\" + _tmpl.stylesheetTokens.hostAttribute.toLowerCase() + \\"]\\",
-        \\"[\\" + _tmpl.stylesheetTokens.shadowAttribute.toLowerCase() + \\"]\\",
-        null
-      );
-
-      document.head.appendChild(sheet);
-      this.stylesheets.push(sheet);
-    });
-
-    _tmpl.customEvents.forEach(event => {
-      const name = event[0];
-      const ref = event[1];
-      this[ref] = this[ref].bind(this);
-      this.template.current.addEventListener(name, this[ref]);
-    });
+    super.componentDidMount(_tmpl);
   }
 
   componentWillUnmount() {
-    this.mounted = false;
-
-    this.stylesheets.forEach(sheet => {
-      if (sheet.parentNode)
-        sheet.parentNode.removeChild(sheet);
-    });
-
-    _tmpl.customEvents.forEach(event => {
-      const name = event[0];
-      const ref = event[1];
-      this.template.current.removeEventListener(name, this[ref]);
-    });
+    super.componentWillUnmount(_tmpl);
   }
 }
 
@@ -358,28 +268,14 @@ tmpl.customEvents = [];"
 `;
 
 exports[`templates should compile forof loops 1`] = `
-"import ObservableMembrane from \\"observable-membrane\\";
+"import LightningComponent from \\"lwc2react/lib/LightningComponent\\";
+import ObservableMembrane from \\"observable-membrane\\";
 import React from \\"react\\";
 import _tmpl from \\"./app.html\\";
 
-class ProductImage extends React.Component {
+class ProductImage extends LightningComponent {
   constructor(...args) {
-    super(...args);
-
-    const membrane = new ObservableMembrane({
-      valueMutated: () => {
-        if (this.mounted)
-          this.forceUpdate();
-      }
-    });
-
-    if (!this.__s) {
-      this.__s = membrane.getProxy({
-        change: this.change
-      });
-    }
-
-    this.template = React.createRef();
+    super(_tmpl);
     this.__s.arr = [1, 2];
   }
 
@@ -390,48 +286,17 @@ class ProductImage extends React.Component {
   }
 
   render() {
-    return _tmpl(Object.assign(this, this.props, this.__s));
+    const prox = Object.assign({}, this, this.__s);
+    prox.__proto__ = this.__proto__;
+    return _tmpl(prox);
   }
 
   componentDidMount() {
-    this.mounted = true;
-    this.stylesheets = [];
-
-    _tmpl.stylesheets.forEach(stylesheet => {
-      const sheet = document.createElement(\\"style\\");
-      sheet.type = \\"text/css\\";
-
-      sheet.textContent = stylesheet(
-        \\"[\\" + _tmpl.stylesheetTokens.hostAttribute.toLowerCase() + \\"]\\",
-        \\"[\\" + _tmpl.stylesheetTokens.shadowAttribute.toLowerCase() + \\"]\\",
-        null
-      );
-
-      document.head.appendChild(sheet);
-      this.stylesheets.push(sheet);
-    });
-
-    _tmpl.customEvents.forEach(event => {
-      const name = event[0];
-      const ref = event[1];
-      this[ref] = this[ref].bind(this);
-      this.template.current.addEventListener(name, this[ref]);
-    });
+    super.componentDidMount(_tmpl);
   }
 
   componentWillUnmount() {
-    this.mounted = false;
-
-    this.stylesheets.forEach(sheet => {
-      if (sheet.parentNode)
-        sheet.parentNode.removeChild(sheet);
-    });
-
-    _tmpl.customEvents.forEach(event => {
-      const name = event[0];
-      const ref = event[1];
-      this.template.current.removeEventListener(name, this[ref]);
-    });
+    super.componentWillUnmount(_tmpl);
   }
 }
 
@@ -560,54 +425,28 @@ tmpl.customEvents = [];"
 `;
 
 exports[`templates should compile the lwc class into a react class that renders the template 1`] = `
-"import ObservableMembrane from \\"observable-membrane\\";
+"import LightningComponent from \\"lwc2react/lib/LightningComponent\\";
+import ObservableMembrane from \\"observable-membrane\\";
 import _tmpl from \\"./test.html\\";
 import React from \\"react\\";
 
-class Test extends React.Component {
+class Test extends LightningComponent {
+  constructor() {
+    super(_tmpl);
+  }
+
   render() {
-    return _tmpl(Object.assign(this, this.props, this.__s));
+    const prox = Object.assign({}, this, this.__s);
+    prox.__proto__ = this.__proto__;
+    return _tmpl(prox);
   }
 
   componentDidMount() {
-    this.mounted = true;
-    this.stylesheets = [];
-
-    _tmpl.stylesheets.forEach(stylesheet => {
-      const sheet = document.createElement(\\"style\\");
-      sheet.type = \\"text/css\\";
-
-      sheet.textContent = stylesheet(
-        \\"[\\" + _tmpl.stylesheetTokens.hostAttribute.toLowerCase() + \\"]\\",
-        \\"[\\" + _tmpl.stylesheetTokens.shadowAttribute.toLowerCase() + \\"]\\",
-        null
-      );
-
-      document.head.appendChild(sheet);
-      this.stylesheets.push(sheet);
-    });
-
-    _tmpl.customEvents.forEach(event => {
-      const name = event[0];
-      const ref = event[1];
-      this[ref] = this[ref].bind(this);
-      this.template.current.addEventListener(name, this[ref]);
-    });
+    super.componentDidMount(_tmpl);
   }
 
   componentWillUnmount() {
-    this.mounted = false;
-
-    this.stylesheets.forEach(sheet => {
-      if (sheet.parentNode)
-        sheet.parentNode.removeChild(sheet);
-    });
-
-    _tmpl.customEvents.forEach(event => {
-      const name = event[0];
-      const ref = event[1];
-      this.template.current.removeEventListener(name, this[ref]);
-    });
+    super.componentWillUnmount(_tmpl);
   }
 }
 

@@ -35,7 +35,7 @@ export default {
     commonjs(),
     replace({ 'process.env.NODE_ENV': JSON.stringify(env) }),
     lwc2react({
-      debug: 'lightning/button', // change to a string to output a specific file for debugging
+      debug: '', // change to a string to output a specific file for debugging
       include: ['**/modules/my/**', '*/**/lwc-components-lightning/**/*'],
     }),
     visualizer({

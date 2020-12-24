@@ -15,6 +15,7 @@
   "rules": {
     "prettier/prettier": "error",
     "no-console": 0,
+    "no-prototype-builtins": 0,
     "no-empty": [
       "error",
       {

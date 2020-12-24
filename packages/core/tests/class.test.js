@@ -70,4 +70,36 @@ describe('General Class Conversion Tests', function () {
 
     expect(compile('sample.js', source)).toMatchSnapshot();
   });
+
+  it('should convert object literals within methods', function () {
+    const source = `
+        import { registerDecorators as _registerDecorators } from "lwc";
+        import _tmpl from "./button.html";
+        import { registerComponent as _registerComponent } from "lwc";
+        import { classSet } from 'lightning/utils';
+        import { normalizeString as normalize } from 'lightning/utilsPrivate';
+        import LightningPrimitiveButton from 'lightning/primitiveButton';
+        import template from './button.html';
+        /**
+         * A clickable element used to perform an action.
+         */
+        class LightningButton extends LightningPrimitiveButton {
+            renderedCallback() {
+                doSomething({
+                    [this.something]: this.something
+                })
+
+                const a = {
+                    [this.something]: this.something
+                }
+            }
+        }
+
+        export default _registerComponent(LightningButton, {
+            tmpl: _tmpl
+        });
+      `;
+
+    expect(compile('sample.js', source)).toMatchSnapshot();
+  });
 });
