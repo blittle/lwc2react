@@ -7,12 +7,13 @@
   "scripts": {
     "build": "lerna run build --concurrency 1",
     "format": "prettier --write '**/*.{js,json}' '!{node_modules,packages}/**' '!package*.json' && lerna run format",
+    "clean": "rm -rf node_modules && rm -rf packages/core/node_modules && rm -rf packages/sample-app/node_modules",
     "lint": "lerna run lint",
     "test": "lerna run test",
     "test:watch": "lerna run test:watch",
     "test:update": "lerna run test:update",
     "version": "rm -f ./packages/**/CHANGELOG.md && npm run format",
-    "postinstall": "lerna bootstrap",
+    "postinstall": "lerna bootstrap --force-local",
     "start": "lerna run serve"
   },
   "author": "Bret Little",
