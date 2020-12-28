@@ -1,6 +1,6 @@
 {
   "name": "lwc2react",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "",
   "main": "lib/index.js",
   "homepage": "https://github.com/blittle/lwc2react",
@@ -22,11 +22,11 @@
     "recast": "0.19.1"
   },
   "devDependencies": {
-    "lwc-components-lightning": "^1.11.1-alpha",
-    "ui-lightning-community": "^230.51.0",
     "lwc": "^1.4.0-alpha3",
+    "lwc-components-lightning": "^1.11.1-alpha",
+    "observable-membrane": "1.0.1",
     "react": "^16.13.1",
-    "observable-membrane": "1.0.1"
+    "ui-lightning-community": "^230.51.0"
   },
   "files": [
     "lib"
