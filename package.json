@@ -12,7 +12,7 @@
     "test:watch": "lerna run test:watch",
     "test:update": "lerna run test:update",
     "version": "rm -f ./packages/**/CHANGELOG.md && npm run format",
-    "postinstall": "lerna bootstrap --force-local",
+    "postinstall": "lerna bootstrap",
     "start": "lerna run serve"
   },
   "author": "Bret Little",
